@@ -1,4 +1,7 @@
 defmodule ReleaseNotesBotWeb.Telemetry do
+  @moduledoc """
+  Start of docs for Telemetry
+  """
   use Supervisor
   import Telemetry.Metrics
 
