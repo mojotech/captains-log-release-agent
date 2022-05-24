@@ -2,10 +2,10 @@ import Config
 
 # Configure your database
 config :release_notes_bot, ReleaseNotesBot.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "release_notes_bot_dev",
+  username: System.get_env("POSTGRES_USER"),
+  password: System.get_env("POSTGRES_PASSWORD"),
+  hostname: System.get_env("POSTGRES_HOSTNAME"),
+  database: System.get_env("POSTGRES_DB"),
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
