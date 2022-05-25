@@ -9,6 +9,7 @@ defmodule ReleaseNotesBot.Project do
   alias ReleaseNotesBot.Repo
   alias __MODULE__
 
+  @derive {Jason.Encoder, except: [:__meta__, :notes, :client]}
   schema "projects" do
     field(:name, :string)
     belongs_to(:client, ReleaseNotesBot.Client)
