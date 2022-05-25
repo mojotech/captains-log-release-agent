@@ -20,10 +20,17 @@ defmodule ReleaseNotesBotWeb.Router do
     get "/", PageController, :index
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", ReleaseNotesBotWeb do
-  #   pipe_through :api
-  # end
+  scope "/captainslog", ReleaseNotesBotWeb do
+    pipe_through :api
+    post "/modal", CaptainsController, :index
+    get "/modal", CaptainsController, :index
+  end
+
+  scope "/api", ReleaseNotesBotWeb do
+    pipe_through :api
+    get "/", CaptainsController, :ping
+    post "/", CaptainsController, :ping
+  end
 
   # Enables LiveDashboard only for development
   #
