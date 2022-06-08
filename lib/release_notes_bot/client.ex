@@ -36,4 +36,8 @@ defmodule ReleaseNotesBot.Client do
   def get(param) do
     Repo.get_by(Client, param)
   end
+
+  def get_projects(id) do
+    Repo.get(Client, id) |> Repo.preload([:projects])
+  end
 end
