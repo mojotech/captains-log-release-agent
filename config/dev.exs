@@ -1,15 +1,5 @@
 import Config
 
-# Configure your database
-config :release_notes_bot, ReleaseNotesBot.Repo,
-  username: System.get_env("POSTGRES_USER"),
-  password: System.get_env("POSTGRES_PASSWORD"),
-  hostname: System.get_env("POSTGRES_HOSTNAME"),
-  database: System.get_env("POSTGRES_DB"),
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
-
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -28,6 +18,17 @@ config :release_notes_bot, ReleaseNotesBotWeb.Endpoint,
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
   ]
+
+# Configure your database
+config :release_notes_bot, ReleaseNotesBot.Repo,
+  username: System.get_env("POSTGRES_USER"),
+  password: System.get_env("POSTGRES_PASSWORD"),
+  hostname: System.get_env("POSTGRES_HOSTNAME"),
+  database: System.get_env("POSTGRES_DB"),
+  port: System.get_env("POSTGRES_PORT") || 5432,
+  stacktrace: true,
+  show_sensitive_data_on_connection_error: true,
+  pool_size: 10
 
 # ## SSL Support
 #

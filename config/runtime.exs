@@ -63,6 +63,12 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  # Configure the Slack Bot
+  config :release_notes_bot,
+    slack_bot_token: System.get_env("SLACK_BOT_TOKEN")
+
+  config :slack, api_token: System.get_env("SLACK_BOT_TOKEN")
+
   # ## Configuring the mailer
   #
   # In production you need to configure the mailer to use a different adapter.
