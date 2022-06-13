@@ -60,15 +60,26 @@ defmodule ReleaseNotesBot.Project do
 
       # Handle an entry! - Create a note for the project
       proj ->
+        details = %{
+          project: proj.name,
+          note_title: raw_values["block-name"]["input-name"]["value"],
+          note_message: raw_values["block-note"]["input-notes"]["value"]
+        }
+
         ReleaseNotesBot.Note.create(%{
           "project_id" => proj.id,
-          "title" => raw_values["block-name"]["input-name"]["value"],
-          "message" => raw_values["block-note"]["input-notes"]["value"]
+          "title" => details.note_title,
+          "message" => details.note_message
         })
-    end
 
-    ## Notify Channel based on
-    raw_values["block-here"]["checkbox-here"]["selected_options"]
+        case raw_values["block-here"]["checkbox-here"]["selected_options"] do
+          [] ->
+            nil
+
+          _ ->
+            details
+        end
+    end
   end
 
   def parse_params(%{"payload" => load}) when is_binary(load) do
