@@ -5,6 +5,99 @@ defmodule ReleaseNotesBotWeb.CaptainsView do
     %{status: "The Captain is on Deck"}
   end
 
+  def new_project(clients) do
+    options = Enum.map(clients, fn x -> dynamic_gen_static_select(x.name, x.id) end)
+
+    %{
+      title: %{
+        type: "plain_text",
+        text: "Captain's Log"
+      },
+      submit: %{
+        type: "plain_text",
+        text: "Submit"
+      },
+      type: "modal",
+      close: %{
+        type: "plain_text",
+        text: "Cancel"
+      },
+      blocks: [
+        %{
+          type: "input",
+          block_id: "client-select",
+          element: %{
+            type: "static_select",
+            placeholder: %{
+              type: "plain_text",
+              text: "Select an item",
+              emoji: true
+            },
+            options: options,
+            action_id: "static_select-action"
+          },
+          label: %{
+            type: "plain_text",
+            text: "Select Client"
+          },
+          optional: false
+        },
+        %{
+          type: "input",
+          block_id: "create_project",
+          element: %{
+            type: "plain_text_input",
+            action_id: "input_action",
+            placeholder: %{
+              type: "plain_text",
+              text: "Enter Project Name"
+            }
+          },
+          label: %{
+            type: "plain_text",
+            text: "Create a Project"
+          }
+        }
+      ]
+    }
+  end
+
+  def new_client() do
+    %{
+      title: %{
+        type: "plain_text",
+        text: "Captain's Log"
+      },
+      submit: %{
+        type: "plain_text",
+        text: "Submit"
+      },
+      type: "modal",
+      close: %{
+        type: "plain_text",
+        text: "Cancel"
+      },
+      blocks: [
+        %{
+          type: "input",
+          block_id: "create_client",
+          element: %{
+            type: "plain_text_input",
+            action_id: "input_action",
+            placeholder: %{
+              type: "plain_text",
+              text: "Enter Client Name"
+            }
+          },
+          label: %{
+            type: "plain_text",
+            text: "Create a Client"
+          }
+        }
+      ]
+    }
+  end
+
   def gen_client_view(clients) do
     options = Enum.map(clients, fn x -> dynamic_gen_static_select(x.name, x.id) end)
 
