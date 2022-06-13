@@ -9,3 +9,8 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+
+import ReleaseNotesBot.Factory
+alias ReleaseNotesBot.Note
+
+Note.get(id: 1) || insert_test()
