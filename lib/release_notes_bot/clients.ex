@@ -1,7 +1,6 @@
 defmodule ReleaseNotesBot.Clients do
   @moduledoc """
-  This module is used to model a Client Stakeholder.
-  A client Stakeholder can have 0 or many projects.
+  Repo functions for Clients
   """
   alias ReleaseNotesBot.Repo
   alias ReleaseNotesBot.Schema.Client

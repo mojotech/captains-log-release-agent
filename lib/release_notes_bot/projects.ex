@@ -7,7 +7,6 @@ defmodule ReleaseNotesBot.Projects do
   alias ReleaseNotesBot.Repo
   alias ReleaseNotesBot.Schema.Project
 
-
   def create(params) do
     %Project{}
     |> Project.changeset(params)

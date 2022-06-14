@@ -1,23 +1,23 @@
-defmodule ReleaseNotesBot.Note do
+defmodule ReleaseNotesBot.Channels do
   @moduledoc """
-  Repo functions for Notes
+  These are the Repo functions for Channels
   """
   alias ReleaseNotesBot.Repo
-  alias ReleaseNotesBot.Schema.Note
+  alias ReleaseNotesBot.Schema.Channel
 
   def create(params) do
-    %Note{}
-    |> Note.changeset(params)
+    %Channel{}
+    |> Channel.changeset(params)
     |> Repo.insert()
   end
 
   def get_all do
-    Repo.all(Note)
+    Repo.all(Channel)
   end
 
   # Get a note by one specific field
   # param ex: (name: "mojotech") or (id: 4)
   def get(param) do
-    Repo.get_by(Note, param)
+    Repo.get_by(Channel, param)
   end
 end
