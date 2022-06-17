@@ -10,6 +10,7 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
   @channel "C03B51092F3"
   @dmchannel "D03GYAZ42LE"
 
+  @spec ping(Plug.Conn.t(), any) :: Plug.Conn.t()
   def ping(conn, _params) do
     render(conn, "ping.json")
   end
@@ -26,7 +27,7 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
       # Logic for handing a modal submission
       # We have 2 different view_submissions due to 2 modals
       "view_submission" ->
-        conn |> Plug.Conn.send_resp(200, [])
+        conn = conn |> Plug.Conn.send_resp(200, []) |> Plug.Conn.halt()
 
         case Projects.parse_response(body) do
           # This case matches the first modal submission once parsed
@@ -70,9 +71,9 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
           _ ->
             nil
         end
-    end
 
-    conn |> Plug.Conn.halt()
+        conn
+    end
   end
 
   def serve_modal(body) do
