@@ -10,6 +10,20 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
+## fly.io
+
+This app is deployed on [fly.io](https://fly.io/)
+
+Ask a teammate about getting access to the Mojotech fly.io account.
+
+Install flyctl [here](https://fly.io/docs/getting-started/installing-flyctl/)
+
+Follow this guide to [sign into flyctl](https://fly.io/docs/getting-started/log-in-to-fly/)
+
+See this guide on [how to deploy to fly.io](https://fly.io/docs/getting-started/elixir/#deploying-again)
+
+
+
 ## Learn more
 
   * Official website: https://www.phoenixframework.org/
