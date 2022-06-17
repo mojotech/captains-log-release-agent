@@ -51,6 +51,8 @@ config :phoenix, :json_library, Jason
 config :release_notes_bot,
   slack_bot_token: System.get_env("SLACK_BOT_TOKEN")
 
+config :slack, api_token: System.get_env("SLACK_BOT_TOKEN")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

@@ -7,6 +7,9 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
   alias ReleaseNotesBot.{Client, Project}
   alias ReleaseNotesBotWeb.CaptainsView
 
+  # Temporary until channels data model is added
+  @channel "C03B51092F3"
+
   def ping(conn, _params) do
     render(conn, "ping.json")
   end
@@ -33,10 +36,6 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
           view
         )
 
-      # Logic for handling when a modal is closed - no submission
-      "view_closed" ->
-        conn |> Plug.Conn.send_resp(200, [])
-
       # Logic for handing a modal submission
       # We have 2 different view_submissions due to 2 modals
       "view_submission" ->
@@ -60,6 +59,15 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
             )
 
           # This case is where the final modal submission hits once parsed.
+          %{} = details ->
+            Slack.Web.Chat.post_message(
+              @channel,
+              "<!here>\n#{body["user"]["name"]} has posted a Release Note to '#{details.project}' titled: '#{details.note_title}'.\nDetails:\n#{details.note_message}"
+            )
+
+          nil ->
+            nil
+
           _ ->
             nil
         end

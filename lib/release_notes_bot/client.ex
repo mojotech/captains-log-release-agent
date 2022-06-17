@@ -38,6 +38,8 @@ defmodule ReleaseNotesBot.Client do
   end
 
   def get_projects(id) do
-    Repo.get(Client, id) |> Repo.preload([:projects])
+    Client
+    |> Repo.get(id)
+    |> Repo.preload([:projects])
   end
 end

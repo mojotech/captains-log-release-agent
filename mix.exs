@@ -20,7 +20,7 @@ defmodule ReleaseNotesBot.MixProject do
   def application do
     [
       mod: {ReleaseNotesBot.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :ex_machina]
     ]
   end
 
@@ -50,7 +50,8 @@ defmodule ReleaseNotesBot.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
-      {:slack, "~> 0.23.5"}
+      {:slack, "~> 0.23.5"},
+      {:ex_machina, "~> 2.7.0"}
     ]
   end
 
