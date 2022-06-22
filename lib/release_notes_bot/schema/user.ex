@@ -16,6 +16,6 @@ defmodule ReleaseNotesBot.Schema.User do
   def changeset(user, params) do
     user
     |> cast(params, [:project_id, :slack_id, :slack_name])
-    |> validate_required([:project_id, :slack_id, :slack_name])
+    |> validate_required([:slack_id, :slack_name])
   end
 end
