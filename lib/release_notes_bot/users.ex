@@ -20,4 +20,16 @@ defmodule ReleaseNotesBot.Users do
   def get(param) do
     Repo.get_by(User, param)
   end
+
+  @spec register(binary, binary) :: nil
+  def register(slack_name, slack_id) do
+    case get(slack_id: slack_id) do
+      nil ->
+        create(%{"slack_id" => slack_id, "slack_name" => slack_name})
+        nil
+
+      _ ->
+        nil
+    end
+  end
 end

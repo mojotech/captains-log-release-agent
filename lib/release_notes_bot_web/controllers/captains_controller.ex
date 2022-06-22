@@ -26,7 +26,7 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
     conn |> Plug.Conn.send_resp(200, [])
   end
 
-  defp serve(body = %{"trigger_id" => trigger, "view" => view, "user" => user}) do
+  defp serve(_body = %{"trigger_id" => trigger, "view" => view, "user" => user}) do
     case Projects.parse_response(view) do
       # This case matches the first modal submission once parsed
       %ReleaseNotesBot.Schema.Client{} = data ->
@@ -72,6 +72,14 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
   end
 
   defp serve(body) do
+    Task.async(fn ->
+      ReleaseNotesBot.Users.register(body["user_name"], body["user_id"])
+    end)
+
+    Task.async(fn ->
+      ReleaseNotesBot.Channels.register(body["channel_name"], body["channel_id"])
+    end)
+
     case body["text"] do
       "new client" ->
         Slack.Web.Views.open(
