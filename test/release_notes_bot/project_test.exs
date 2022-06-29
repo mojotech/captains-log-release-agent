@@ -1,6 +1,6 @@
 defmodule ReleaseNotesBot.Project.Test do
   use ExUnit.Case, async: true
-  alias ReleaseNotesBot.Project
+  alias ReleaseNotesBot.Schema.Project
 
   setup do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(ReleaseNotesBot.Repo)
@@ -32,7 +32,7 @@ defmodule ReleaseNotesBot.Project.Test do
   end
 
   defp seed do
-    {:ok, res} = ReleaseNotesBot.Client.create(%{"name" => "TestClient"})
+    {:ok, res} = ReleaseNotesBot.Clients.create(%{"name" => "TestClient"})
     {:ok, insert_id: res.id}
   end
 end

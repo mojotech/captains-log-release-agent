@@ -1,6 +1,6 @@
 defmodule ReleaseNotesBot.Client.Test do
   use ExUnit.Case, async: true
-  alias ReleaseNotesBot.Client
+  alias ReleaseNotesBot.Schema.Client
 
   setup do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(ReleaseNotesBot.Repo)

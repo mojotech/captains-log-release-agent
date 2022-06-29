@@ -1,41 +1,26 @@
-defmodule ReleaseNotesBot.Project do
+defmodule ReleaseNotesBot.Projects do
   @moduledoc """
   This module is used to model a Client Project.
   A Client Stakeholder can have 0 or many Projects.
   A Project can have 0 or many Notes.
   """
-  use Ecto.Schema
-  import Ecto.Changeset
   alias ReleaseNotesBot.Repo
-
-  schema "projects" do
-    field(:name, :string)
-    belongs_to(:client, ReleaseNotesBot.Client)
-    has_many(:notes, ReleaseNotesBot.Note)
-
-    timestamps()
-  end
-
-  def changeset(project, params) do
-    project
-    |> cast(params, [:client_id, :name])
-    |> validate_required([:client_id, :name])
-  end
+  alias ReleaseNotesBot.Schema.Project
 
   def create(params) do
-    %__MODULE__{}
-    |> changeset(params)
+    %Project{}
+    |> Project.changeset(params)
     |> Repo.insert()
   end
 
   def get_all do
-    Repo.all(__MODULE__)
+    Repo.all(Project)
   end
 
   # Get a project by one specific field
   # param ex: (name: "mojotech") or (id: 4)
   def get(param) do
-    Repo.get_by(__MODULE__, param)
+    Repo.get_by(Project, param)
   end
 
   def parse_response(res_body) do
@@ -47,7 +32,7 @@ defmodule ReleaseNotesBot.Project do
     # Populate a static select for all projects under client id in here
     input["static_select-action"]["selected_option"]["value"]
     |> String.to_integer()
-    |> ReleaseNotesBot.Client.get_projects()
+    |> ReleaseNotesBot.Clients.get_projects()
   end
 
   # Parse the response from the last modal

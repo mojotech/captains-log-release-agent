@@ -4,7 +4,7 @@ defmodule ReleaseNotesBot.Factory do
   """
 
   use ExMachina.Ecto, repo: ReleaseNotesBot.Repo
-  alias ReleaseNotesBot.{Client, Note, Project}
+  alias ReleaseNotesBot.Schema.{Client, Note, Project}
 
   def client_factory do
     %Client{

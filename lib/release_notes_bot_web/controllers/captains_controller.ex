@@ -4,7 +4,7 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
   / commands from Slack.
   """
   use ReleaseNotesBotWeb, :controller
-  alias ReleaseNotesBot.{Client, Project}
+  alias ReleaseNotesBot.{Clients, Projects}
   alias ReleaseNotesBotWeb.CaptainsView
 
   # Temporary until channels data model is added
@@ -15,15 +15,15 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
   end
 
   def index(conn, params) do
-    body = Project.parse_params(params)
+    body = Projects.parse_params(params)
 
-    case Project.parse_action(body) do
+    case Projects.parse_action(body) do
       # Logic for opening a new modal for a user
       "open_modal" ->
         conn |> Plug.Conn.send_resp(200, [])
 
         {:ok, view} =
-          Client.get_all()
+          Clients.get_all()
           |> CaptainsView.gen_client_view()
           |> Jason.encode()
 
@@ -41,9 +41,9 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
       "view_submission" ->
         conn |> Plug.Conn.send_resp(200, [])
 
-        case Project.parse_response(body) do
+        case Projects.parse_response(body) do
           # This case matches the first modal submission once parsed
-          %ReleaseNotesBot.Client{} = data ->
+          %ReleaseNotesBot.Schema.Client{} = data ->
             {:ok, view} =
               data.projects
               |> CaptainsView.gen_release_notes_view()
