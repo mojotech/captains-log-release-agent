@@ -20,17 +20,17 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
 
     case Projects.parse_action(body) do
       "open_modal" ->
-        Task.async(fn -> serve_modal(body) end)
+        Task.async(fn -> serve(body) end)
 
       "view_submission" ->
-        Task.async(fn -> view_submission(body) end)
+        Task.async(fn -> serve(body) end)
     end
 
     conn |> Plug.Conn.send_resp(200, [])
   end
 
-  defp view_submission(body) do
-    case Projects.parse_response(body) do
+  defp serve(body = %{"trigger_id" => trigger, "view" => view, "user" => user}) do
+    case Projects.parse_response(view) do
       # This case matches the first modal submission once parsed
       %ReleaseNotesBot.Schema.Client{} = data ->
         {:ok, view} =
@@ -43,27 +43,27 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
             :release_notes_bot,
             :slack_bot_token
           ),
-          body["trigger_id"],
+          trigger,
           view
         )
 
       %{client: client_name, project: project_name} ->
         Slack.Web.Chat.post_message(
           @channel,
-          "#{body["user"]["name"]} has created a new project for #{client_name} titled: '#{project_name}'"
+          "#{user["name"]} has created a new project for #{client_name} titled: '#{project_name}'"
         )
 
       %{client: client_name} ->
         Slack.Web.Chat.post_message(
           @channel,
-          "#{body["user"]["name"]} has created new client: #{client_name}"
+          "#{user["name"]} has created new client: #{client_name}"
         )
 
       # This case is where the final modal submission hits once parsed.
       %{} = details ->
         Slack.Web.Chat.post_message(
           @channel,
-          "<!here>\n#{body["user"]["name"]} has posted a Release Note to '#{details.project}' titled: '#{details.note_title}'.\nDetails:\n#{details.note_message}"
+          "<!here>\n#{user["name"]} has posted a Release Note to '#{details.project}' titled: '#{details.note_title}'.\nDetails:\n#{details.note_message}"
         )
 
       nil ->
@@ -74,7 +74,7 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
     end
   end
 
-  defp serve_modal(body) do
+  defp serve(body) do
     case body["text"] do
       "new client" ->
         Slack.Web.Views.open(
