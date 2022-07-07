@@ -24,8 +24,8 @@ defmodule ReleaseNotesBot.Projects do
     Repo.get_by(Project, param)
   end
 
-  def parse_response(res_body) do
-    parse_inner_response(res_body["view"]["state"]["values"])
+  def parse_response(view) do
+    parse_inner_response(view["state"]["values"])
   end
 
   defp parse_inner_response(%{"client-select" => selected_client, "create_project" => input}) do
