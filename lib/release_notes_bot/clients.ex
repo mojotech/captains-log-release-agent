@@ -21,6 +21,10 @@ defmodule ReleaseNotesBot.Clients do
     Repo.get_by(Client, param)
   end
 
+  def get!(param) do
+    Repo.get_by!(Client, param)
+  end
+
   def get_projects(id) do
     Client
     |> Repo.get(id)

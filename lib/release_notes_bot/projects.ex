@@ -6,6 +6,7 @@ defmodule ReleaseNotesBot.Projects do
   """
   alias ReleaseNotesBot.Repo
   alias ReleaseNotesBot.Schema.Project
+  alias ReleaseNotesBot.Clients
 
   def create(params) do
     %Project{}
@@ -25,6 +26,26 @@ defmodule ReleaseNotesBot.Projects do
 
   def parse_response(res_body) do
     parse_inner_response(res_body["view"]["state"]["values"])
+  end
+
+  defp parse_inner_response(%{"client-select" => selected_client, "create_project" => input}) do
+    client_id =
+      String.to_integer(selected_client["static_select-action"]["selected_option"]["value"])
+
+    client = Clients.get(id: client_id)
+
+    __MODULE__.create(%{
+      "name" => input["input_action"]["value"],
+      "client_id" => client_id
+    })
+
+    %{client: client.name, project: input["input_action"]["value"]}
+  end
+
+  defp parse_inner_response(%{"create_client" => input}) do
+    client_name = input["input_action"]["value"]
+    Clients.create(%{"name" => input["input_action"]["value"]})
+    %{client: client_name}
   end
 
   # Parse the response from the first modal
