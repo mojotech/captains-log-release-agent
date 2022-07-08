@@ -7,8 +7,8 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
   alias ReleaseNotesBot.{Clients, Projects}
   alias ReleaseNotesBotWeb.CaptainsView
 
-  @channel "C03B51092F3"
-  @dmchannel "D03GYAZ42LE"
+  @mainchannel "C03B51092F3"
+  @channel "D03GYAZ42LE"
 
   @spec ping(Plug.Conn.t(), any) :: Plug.Conn.t()
   def ping(conn, _params) do
@@ -19,64 +19,62 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
     body = Projects.parse_params(params)
 
     case Projects.parse_action(body) do
-      # Logic for opening a new modal for a user
       "open_modal" ->
-        serve_modal(body)
-        conn |> Plug.Conn.send_resp(200, [])
+        Task.async(fn -> serve_modal(body) end)
 
-      # Logic for handing a modal submission
-      # We have 2 different view_submissions due to 2 modals
       "view_submission" ->
-        conn = conn |> Plug.Conn.send_resp(200, []) |> Plug.Conn.halt()
+        Task.async(fn -> view_submission(body) end)
+    end
 
-        case Projects.parse_response(body) do
-          # This case matches the first modal submission once parsed
-          %ReleaseNotesBot.Schema.Client{} = data ->
-            {:ok, view} =
-              data.projects
-              |> CaptainsView.gen_release_notes_view()
-              |> Jason.encode()
+    conn |> Plug.Conn.send_resp(200, [])
+  end
 
-            Slack.Web.Views.open(
-              Application.get_env(
-                :release_notes_bot,
-                :slack_bot_token
-              ),
-              body["trigger_id"],
-              view
-            )
+  defp view_submission(body) do
+    case Projects.parse_response(body) do
+      # This case matches the first modal submission once parsed
+      %ReleaseNotesBot.Schema.Client{} = data ->
+        {:ok, view} =
+          data.projects
+          |> CaptainsView.gen_release_notes_view()
+          |> Jason.encode()
 
-          %{client: client_name, project: project_name} ->
-            Slack.Web.Chat.post_message(
-              @channel,
-              "#{body["user"]["name"]} has created a new project for #{client_name} titled: '#{project_name}'"
-            )
+        Slack.Web.Views.open(
+          Application.get_env(
+            :release_notes_bot,
+            :slack_bot_token
+          ),
+          body["trigger_id"],
+          view
+        )
 
-          %{client: client_name} ->
-            Slack.Web.Chat.post_message(
-              @channel,
-              "#{body["user"]["name"]} has created new client: #{client_name}"
-            )
+      %{client: client_name, project: project_name} ->
+        Slack.Web.Chat.post_message(
+          @channel,
+          "#{body["user"]["name"]} has created a new project for #{client_name} titled: '#{project_name}'"
+        )
 
-          # This case is where the final modal submission hits once parsed.
-          %{} = details ->
-            Slack.Web.Chat.post_message(
-              @channel,
-              "<!here>\n#{body["user"]["name"]} has posted a Release Note to '#{details.project}' titled: '#{details.note_title}'.\nDetails:\n#{details.note_message}"
-            )
+      %{client: client_name} ->
+        Slack.Web.Chat.post_message(
+          @channel,
+          "#{body["user"]["name"]} has created new client: #{client_name}"
+        )
 
-          nil ->
-            nil
+      # This case is where the final modal submission hits once parsed.
+      %{} = details ->
+        Slack.Web.Chat.post_message(
+          @channel,
+          "<!here>\n#{body["user"]["name"]} has posted a Release Note to '#{details.project}' titled: '#{details.note_title}'.\nDetails:\n#{details.note_message}"
+        )
 
-          _ ->
-            nil
-        end
+      nil ->
+        nil
 
-        conn
+      _ ->
+        nil
     end
   end
 
-  def serve_modal(body) do
+  defp serve_modal(body) do
     case body["text"] do
       "new client" ->
         Slack.Web.Views.open(
