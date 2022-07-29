@@ -7,9 +7,6 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
   alias ReleaseNotesBot.{Clients, Projects}
   alias ReleaseNotesBotWeb.CaptainsView
 
-  @mainchannel "C03B51092F3"
-  @channel "D03GYAZ42LE"
-
   @spec ping(Plug.Conn.t(), any) :: Plug.Conn.t()
   def ping(conn, _params) do
     render(conn, "ping.json")
@@ -49,20 +46,20 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
 
       %{client: client_name, project: project_name} ->
         Slack.Web.Chat.post_message(
-          @channel,
+          Application.get_env(:release_notes_bot, :slack_channel),
           "#{user["name"]} has created a new project for #{client_name} titled: '#{project_name}'"
         )
 
       %{client: client_name} ->
         Slack.Web.Chat.post_message(
-          @channel,
+          Application.get_env(:release_notes_bot, :slack_channel),
           "#{user["name"]} has created new client: #{client_name}"
         )
 
       # This case is where the final modal submission hits once parsed.
       %{} = details ->
         Slack.Web.Chat.post_message(
-          @channel,
+          Application.get_env(:release_notes_bot, :slack_channel),
           "<!here>\n#{user["name"]} has posted a Release Note to '#{details.project}' titled: '#{details.note_title}'.\nDetails:\n#{details.note_message}"
         )
 
