@@ -60,7 +60,7 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
       %{} = details ->
         Slack.Web.Chat.post_message(
           Application.get_env(:release_notes_bot, :slack_channel),
-          "<!here>\n#{user["name"]} has posted a Release Note to '#{details.project}' titled: '#{details.title}'.\nDetails:\n#{details.message}"
+          "<!here>\n#{user["name"]} has posted a Release Note to '#{details.project}' titled: '#{details.title}'.\nDetails:\n#{details.message}\n\nPersistence Status: #{details.persistence_status}"
         )
 
       nil ->

@@ -15,9 +15,10 @@ defmodule ReleaseNotesBot.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: ReleaseNotesBot.PubSub},
       # Start the Endpoint (http/https)
-      ReleaseNotesBotWeb.Endpoint
+      ReleaseNotesBotWeb.Endpoint,
       # Start a worker by calling: ReleaseNotesBot.Worker.start_link(arg)
       # {ReleaseNotesBot.Worker, arg}
+      {Finch, name: ReleaseNotesBot.Finch}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

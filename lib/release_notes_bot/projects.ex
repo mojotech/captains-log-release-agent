@@ -72,6 +72,8 @@ defmodule ReleaseNotesBot.Projects do
           message: raw_values["block-note"]["input-notes"]["value"]
         }
 
+        details = Map.put_new(details, :persistence_status, ReleaseNotesBot.Note.persist(details))
+
         ReleaseNotesBot.Note.create(%{
           "project_id" => proj.id,
           "title" => details.title,
