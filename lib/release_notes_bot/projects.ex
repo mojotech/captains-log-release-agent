@@ -77,7 +77,8 @@ defmodule ReleaseNotesBot.Projects do
         ReleaseNotesBot.Note.create(%{
           "project_id" => proj.id,
           "title" => details.title,
-          "message" => details.message
+          "message" => details.message,
+          "persisted" => interpret_persisted(details.persistence_status)
         })
 
         case raw_values["block-here"]["checkbox-here"]["selected_options"] do
@@ -110,5 +111,15 @@ defmodule ReleaseNotesBot.Projects do
 
   def parse_action(%{}) do
     "open_modal"
+  end
+
+  defp interpret_persisted(status) do
+    case status do
+      200 ->
+        true
+
+      _ ->
+        false
+    end
   end
 end
