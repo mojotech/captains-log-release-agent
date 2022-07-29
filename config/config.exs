@@ -53,6 +53,18 @@ config :release_notes_bot,
 
 config :slack, api_token: System.get_env("SLACK_BOT_TOKEN")
 
+config :release_notes_bot, slack_channel: System.get_env("SLACK_CHANNEL")
+
+config :release_notes_bot, confluence_space_key: System.get_env("CONFLUENCE_SPACE_KEY")
+
+config :release_notes_bot, confluence_space_id: System.get_env("CONFLUENCE_SPACE_ID")
+
+config :release_notes_bot, confluence_parent_id: System.get_env("CONFLUENCE_PARENT_ID")
+
+config :release_notes_bot, confluence_email: System.get_env("CONFLUENCE_EMAIL")
+
+config :release_notes_bot, confluence_api_key: System.get_env("CONFLUENCE_API_KEY")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
