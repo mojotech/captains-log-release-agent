@@ -51,7 +51,8 @@ defmodule ReleaseNotesBot.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:slack, "~> 0.23.5"},
-      {:ex_machina, "~> 2.7.0"}
+      {:ex_machina, "~> 2.7.0"},
+      {:finch, "~> 0.12"}
     ]
   end
 
