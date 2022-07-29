@@ -10,6 +10,7 @@ defmodule ReleaseNotesBot.Schema.Note do
   schema "notes" do
     field(:title, :string)
     field(:message, :string)
+    field(:persisted, :boolean, default: false)
     belongs_to(:project, ReleaseNotesBot.Schema.Project)
 
     timestamps()
@@ -17,7 +18,7 @@ defmodule ReleaseNotesBot.Schema.Note do
 
   def changeset(note, params) do
     note
-    |> cast(params, [:project_id, :title, :message])
+    |> cast(params, [:project_id, :title, :message, :persisted])
     |> validate_required([:project_id, :title, :message])
   end
 end
