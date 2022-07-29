@@ -68,14 +68,14 @@ defmodule ReleaseNotesBot.Projects do
       proj ->
         details = %{
           project: proj.name,
-          note_title: raw_values["block-name"]["input-name"]["value"],
-          note_message: raw_values["block-note"]["input-notes"]["value"]
+          title: raw_values["block-name"]["input-name"]["value"],
+          message: raw_values["block-note"]["input-notes"]["value"]
         }
 
         ReleaseNotesBot.Note.create(%{
           "project_id" => proj.id,
-          "title" => details.note_title,
-          "message" => details.note_message
+          "title" => details.title,
+          "message" => details.message
         })
 
         case raw_values["block-here"]["checkbox-here"]["selected_options"] do
