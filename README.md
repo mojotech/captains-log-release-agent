@@ -1,5 +1,30 @@
 # ReleaseNotesBot
 
+## Usage
+These are the unofficially official docs of the ***Captain's Log***
+
+This project is currently under heavy development.
+ - Bug reports and feature inquiries are in Slack channel: `#mojotime-release-notes`
+ - If you are not in that Slack channel, you may direct message `@zachbob` or `@Sara Davila`
+
+The Captain's log can only be used inside of its home Mojotech organization where it is installed.
+You are more than welcome to attempt to use it outside of the Mojotech organization.
+
+You may use any of the Captain's Log commands anywhere inside of the Mojotech Organization.
+The main command is `/captainslog`. Upon entering this:
+  1. You will be prompted with a modal to select a client. Click Submit.
+  - NOTE: If nothing happens after you enter the command, this is a known bug. Just keep trying.
+  2. You will be prompted to select a project.
+  - Enter the name of the update in `Release Name`.
+  - Enter notes about the `Release Name`.
+  - If you would like to notify the message you've entered to Slack Channel, select the checkbox.
+  - NOTE: This currently only works for one Slack Channel - can be swapped easily upon inquiry.
+
+Other Commands:
+ - `/captainslog new client` - Command to create a new client.
+ - `/captainslog new project` - Select a client and create a new project.
+
+
 ## Getting a dev instance running:
 
 1. Configure [direv](https://direnv.net/). Then copy `.sample.envrc` to a new `.envrc`. Don't forget to run `direnv allow` after any changes to `.envrc`.
@@ -62,7 +87,9 @@ Follow this guide to [sign into flyctl](https://fly.io/docs/getting-started/log-
 
 See this guide on [how to deploy to fly.io](https://fly.io/docs/getting-started/elixir/#deploying-again)
 
+Input enviornment variables into `config/runtime.exs` to use on fly.io
 
+Update enviornment variable values with: `flyctl secrets set ENV_NAME=value`
 
 ## Learn more
 
