@@ -66,7 +66,7 @@ defmodule ReleaseNotesBotWeb.CaptainsView do
         Input.static_select(
           "block-title",
           "select-title-action",
-          "Project a Project",
+          "Select a Project",
           "Project Name",
           projects
         ),
