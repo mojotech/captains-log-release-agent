@@ -65,6 +65,12 @@ config :release_notes_bot, confluence_email: System.get_env("CONFLUENCE_EMAIL")
 
 config :release_notes_bot, confluence_api_key: System.get_env("CONFLUENCE_API_KEY")
 
+config :release_notes_bot, client_secret: System.get_env("CLIENT_SECRET")
+
+config :release_notes_bot, client_id: System.get_env("CLIENT_ID")
+
+config :release_notes_bot, oauth_redirect_uri: System.get_env("OAUTH_REDIRECT_URI")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
