@@ -4,6 +4,10 @@ defmodule ReleaseNotesBotWeb.OAuthController do
   / commands from Slack.
   """
   use ReleaseNotesBotWeb, :controller
+  import Ecto.Query, only: [from: 2]
+
+  alias ReleaseNotesBot.Schema.{Token}
+  alias ReleaseNotesBot.{Repo}
 
   def get(conn, params) do
     slack_id = params["state"]
@@ -24,6 +28,20 @@ defmodule ReleaseNotesBotWeb.OAuthController do
 
     tokens_response =
       HTTPoison.post!("https://auth.atlassian.com/oauth/token", json_body, headers)
+
+    tokens_json = Jason.decode!(tokens_response.body)
+    access_token = tokens_json["access_token"]
+    refresh_token = tokens_json["refresh_token"]
+
+    user_id = Repo.one(from q in "users", where: q.slack_id == ^slack_id, select: q.id)
+
+    %Token{
+      persistence_provider_id: 1,
+      access_token: access_token,
+      refresh_token: refresh_token,
+      user_id: user_id
+    }
+    |> Repo.insert()
 
     conn |> Plug.Conn.send_resp(200, "OK")
   end
