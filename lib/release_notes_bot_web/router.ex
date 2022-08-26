@@ -32,6 +32,11 @@ defmodule ReleaseNotesBotWeb.Router do
     post "/", CaptainsController, :ping
   end
 
+  scope "/oauth", ReleaseNotesBotWeb do
+    pipe_through :api
+    get "/", OAuthController, :get
+  end
+
   # Enables LiveDashboard only for development
   #
   # If you want to use the LiveDashboard in production, you should put
