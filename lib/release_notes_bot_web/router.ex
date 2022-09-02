@@ -26,6 +26,11 @@ defmodule ReleaseNotesBotWeb.Router do
     post "/interaction", SlackInteractionController, :index
   end
 
+  scope "/webhook", ReleaseNotesBotWeb do
+    pipe_through :api
+    post "/", WebhookController, :post
+  end
+
   scope "/api", ReleaseNotesBotWeb do
     pipe_through :api
     get "/", CaptainsController, :ping
