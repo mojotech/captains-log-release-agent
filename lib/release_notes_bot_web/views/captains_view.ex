@@ -38,7 +38,7 @@ defmodule ReleaseNotesBotWeb.CaptainsView do
     }
   end
 
-  def gen_client_view(clients) do
+  def gen_client_view(clients, channel_name, channel_id) do
     %{
       title: Title.title("Captain's Log"),
       submit: Submit.submit(),
@@ -47,8 +47,8 @@ defmodule ReleaseNotesBotWeb.CaptainsView do
       blocks: [
         Input.static_select(
           "client-select",
-          "static_select-action",
-          "Select Client",
+          "static_select-action:#{channel_id}",
+          "Select Client for channel: #{channel_name}",
           "Select an item",
           clients
         )

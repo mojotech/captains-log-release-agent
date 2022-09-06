@@ -4,7 +4,7 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
   / commands from Slack.
   """
   use ReleaseNotesBotWeb, :controller
-  alias ReleaseNotesBot.{Clients, Projects}
+  alias ReleaseNotesBot.{Clients, Projects, Channels}
   alias ReleaseNotesBotWeb.CaptainsView
 
   def index(conn, params) do
@@ -14,9 +14,7 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
       ReleaseNotesBot.Users.register(body["user_name"], body["user_id"])
     end)
 
-    Task.async(fn ->
-      ReleaseNotesBot.Channels.register(body["channel_name"], body["channel_id"])
-    end)
+    ReleaseNotesBot.Channels.register(body["channel_name"], body["channel_id"])
 
     case body["text"] do
       "new client" ->
@@ -45,9 +43,24 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
         )
 
       "" ->
+        check_channel(body)
+
+      _ ->
+        nil
+    end
+
+    conn |> Plug.Conn.send_resp(204, [])
+  end
+
+  defp check_channel(body) do
+    %ReleaseNotesBot.Schema.Channel{client_id: client_id} =
+      Channels.get_client(slack_id: body["channel_id"])
+
+    case client_id do
+      nil ->
         {:ok, view} =
           Clients.get_all()
-          |> CaptainsView.gen_client_view()
+          |> CaptainsView.gen_client_view(body["channel_name"], body["channel_id"])
           |> Jason.encode()
 
         Slack.Web.Views.open(
@@ -60,9 +73,21 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
         )
 
       _ ->
-        nil
-    end
+        data = ReleaseNotesBot.Clients.get_projects(client_id)
 
-    Plug.Conn.send_resp(conn, 204, [])
+        {:ok, view} =
+          data.projects
+          |> CaptainsView.gen_release_notes_view()
+          |> Jason.encode()
+
+        Slack.Web.Views.open(
+          Application.get_env(
+            :release_notes_bot,
+            :slack_bot_token
+          ),
+          body["trigger_id"],
+          view
+        )
+    end
   end
 end

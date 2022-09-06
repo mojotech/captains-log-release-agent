@@ -6,7 +6,7 @@ defmodule ReleaseNotesBot.Projects do
   """
   alias ReleaseNotesBot.Repo
   alias ReleaseNotesBot.Schema.Project
-  alias ReleaseNotesBot.Clients
+  alias ReleaseNotesBot.{Clients, Channels}
 
   def create(params) do
     %Project{}
@@ -48,12 +48,21 @@ defmodule ReleaseNotesBot.Projects do
     %{client: client_name}
   end
 
-  # Parse the response from the first modal
   defp parse_inner_response(%{"client-select" => input}) do
-    # Populate a static select for all projects under client id in here
-    input["static_select-action"]["selected_option"]["value"]
-    |> String.to_integer()
-    |> ReleaseNotesBot.Clients.get_projects()
+    # Slack Channel ID is encoded in the only key. We need to decode it.
+    # It looks like this: "static_select-action:SOME-ID".
+    # This key is used to update the Channels table so that way a client_id
+    # is always associated with a particular channel.
+    [key] = Map.keys(input)
+    slack_channel = String.split(key, ":")
+    client_id = String.to_integer(input[key]["selected_option"]["value"])
+
+    Channels.update(
+      Channels.get(slack_id: List.last(slack_channel)),
+      %{client_id: client_id}
+    )
+
+    ReleaseNotesBot.Clients.get_projects(client_id)
   end
 
   # Parse the response from the last modal
