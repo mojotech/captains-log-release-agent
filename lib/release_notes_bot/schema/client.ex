@@ -9,6 +9,7 @@ defmodule ReleaseNotesBot.Schema.Client do
   schema "clients" do
     field(:name, :string)
     has_many(:projects, ReleaseNotesBot.Schema.Project)
+    has_many(:channels, ReleaseNotesBot.Schema.Channel)
 
     timestamps()
   end
