@@ -100,19 +100,6 @@ defmodule ReleaseNotesBot.Projects do
     params
   end
 
-  # parse_action can reduced to regular pattern matching in calling function
-  def parse_action(%{"type" => "view_submission"}) do
-    "view_submission"
-  end
-
-  def parse_action(%{"type" => "view_closed"}) do
-    "view_closed"
-  end
-
-  def parse_action(%{}) do
-    "open_modal"
-  end
-
   defp interpret_persisted(status) do
     case status do
       200 ->
