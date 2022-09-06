@@ -23,7 +23,7 @@ defmodule ReleaseNotesBotWeb.Router do
   scope "/captainslog", ReleaseNotesBotWeb do
     pipe_through :api
     post "/modal", CaptainsController, :index
-    get "/modal", CaptainsController, :index
+    post "/interaction", SlackInteractionController, :index
   end
 
   scope "/api", ReleaseNotesBotWeb do
