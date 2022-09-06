@@ -4,6 +4,7 @@ defmodule ReleaseNotesBot.Channels do
   """
   alias ReleaseNotesBot.Repo
   alias ReleaseNotesBot.Schema.Channel
+  alias __MODULE__
 
   def create(params) do
     %Channel{}
@@ -23,7 +24,7 @@ defmodule ReleaseNotesBot.Channels do
 
   @spec register(binary, binary) :: nil
   def register(slack_name, slack_id) do
-    case get(slack_id: slack_id) do
+    case Channels.get(slack_id: slack_id) do
       nil ->
         if not parse_dm(slack_name) and not parse_group_dm(slack_name) do
           create(%{"slack_id" => slack_id, "name" => slack_name})
@@ -34,6 +35,18 @@ defmodule ReleaseNotesBot.Channels do
       _ ->
         nil
     end
+  end
+
+  def update(channel, params) do
+    channel
+    |> Channel.changeset(params)
+    |> Repo.update()
+  end
+
+  def get_client(param) do
+    Channel
+    |> Repo.get_by(param)
+    |> Repo.preload([:client])
   end
 
   @spec parse_dm(binary) :: boolean
