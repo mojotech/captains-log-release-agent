@@ -49,7 +49,7 @@ Other Commands:
   * Inside the box for `Request URL`, paste your ngrok URL and append `/captainslog/modal`.
   * Click save. You should get redirected back to the home page for the app.
   * Under `Features` on the left, Navigate to `Interactivity & Shortcuts`.
-  * Inside the box for `Request URL`, paste your ngrok URL and append `/captainslog/modal`.
+  * Inside the box for `Request URL`, paste your ngrok URL and append `/captainslog/interaction`.
   * Click `Save Changes`.
 
 7. Test to see if everything worked - go into slack and enter the command: `/captainslogdev`
