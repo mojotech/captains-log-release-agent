@@ -8,22 +8,13 @@ defmodule ReleaseNotesBotWeb.SlackInteractionController do
   alias ReleaseNotesBotWeb.CaptainsView
 
   def index(conn, params) do
-    %{"trigger_id" => trigger, "view" => view, "user" => user} = Projects.parse_params(params)
+    %{"view" => view, "user" => user} = Projects.parse_params(params)
 
     case Projects.parse_response(view) do
-      data = %ReleaseNotesBot.Schema.Client{} ->
-        {:ok, view} =
-          data.projects
-          |> CaptainsView.gen_release_notes_view()
-          |> Jason.encode()
-
-        Slack.Web.Views.open(
-          Application.get_env(
-            :release_notes_bot,
-            :slack_bot_token
-          ),
-          trigger,
-          view
+      %{client: client_name, channel: channel} ->
+        Slack.Web.Chat.post_message(
+          channel,
+          "#{user["name"]} has configured this channel to accept messages and updates for projects under: #{client_name}"
         )
 
       %{client: client_name, project: project_name} ->
