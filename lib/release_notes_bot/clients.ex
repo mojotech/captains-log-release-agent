@@ -30,4 +30,10 @@ defmodule ReleaseNotesBot.Clients do
     |> Repo.get(id)
     |> Repo.preload([:projects])
   end
+
+  def get_channels(id) do
+    Client
+    |> Repo.get(id)
+    |> Repo.preload([:channels])
+  end
 end
