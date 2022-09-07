@@ -5,7 +5,6 @@ defmodule ReleaseNotesBotWeb.SlackInteractionController do
   """
   use ReleaseNotesBotWeb, :controller
   alias ReleaseNotesBot.Projects
-  alias ReleaseNotesBotWeb.CaptainsView
 
   def index(conn, params) do
     %{"view" => view, "user" => user} = Projects.parse_params(params)
@@ -23,17 +22,18 @@ defmodule ReleaseNotesBotWeb.SlackInteractionController do
           "#{user["name"]} has created a new project for #{client_name} titled: '#{project_name}'"
         )
 
+      %{details: details, client: client} when client.channels != nil ->
+        Enum.each(client.channels, fn c ->
+          Slack.Web.Chat.post_message(
+            c.slack_id,
+            "<!here>\n#{user["name"]} has posted a Release Note to '#{details.project}' titled: '#{details.title}'.\nDetails:\n#{details.message}\n\nPersistence Status: #{details.persistence_status}"
+          )
+        end)
+
       %{client: client_name} ->
         Slack.Web.Chat.post_message(
           Application.get_env(:release_notes_bot, :slack_channel),
           "#{user["name"]} has created new client: #{client_name}"
-        )
-
-      # This case is where the final modal submission hits once parsed.
-      %{} = details ->
-        Slack.Web.Chat.post_message(
-          Application.get_env(:release_notes_bot, :slack_channel),
-          "<!here>\n#{user["name"]} has posted a Release Note to '#{details.project}' titled: '#{details.title}'.\nDetails:\n#{details.message}\n\nPersistence Status: #{details.persistence_status}"
         )
 
       _ ->

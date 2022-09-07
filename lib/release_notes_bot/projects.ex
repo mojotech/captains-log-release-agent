@@ -95,7 +95,7 @@ defmodule ReleaseNotesBot.Projects do
             nil
 
           _ ->
-            details
+            %{details: details, client: Clients.get_channels(proj.client_id)}
         end
     end
   end
