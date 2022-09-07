@@ -54,18 +54,18 @@ defmodule ReleaseNotesBot.Projects do
     # This key is used to update the Channels table so that way a client_id
     # is always associated with a particular channel.
     [key] = Map.keys(input)
-    slack_channel = String.split(key, ":")
+    slack_channel = String.split(key, ":") |> List.last()
     client_id = String.to_integer(input[key]["selected_option"]["value"])
 
     Channels.update(
-      Channels.get(slack_id: List.last(slack_channel)),
+      Channels.get(slack_id: slack_channel),
       %{client_id: client_id}
     )
 
-    ReleaseNotesBot.Clients.get_projects(client_id)
+    client = Clients.get(id: client_id)
+    %{client: client.name, channel: slack_channel}
   end
 
-  # Parse the response from the last modal
   defp parse_inner_response(raw_values) do
     project_id = raw_values["block-title"]["select-title-action"]["selected_option"]["value"]
 
