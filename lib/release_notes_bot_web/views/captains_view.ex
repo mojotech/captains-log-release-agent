@@ -18,10 +18,21 @@ defmodule ReleaseNotesBotWeb.CaptainsView do
           "client-select",
           "static_select-action",
           "Select Client",
-          "Select an item",
+          "Select a client...",
           clients
         ),
-        Input.text("create_project", "input_action", "Create a Project", "Enter Project Name")
+        Input.text(
+          "create_project",
+          "input_action",
+          "Project name",
+          "Enter project name here..."
+        ),
+        Input.text(
+          "repo-url",
+          "repo-url-input",
+          "Paste your Project's Repository url (must start wit 'https://')",
+          "Paste repository url here..."
+        )
       ]
     }
   end
