@@ -49,6 +49,19 @@ defmodule ReleaseNotesBot.Channels do
     |> Repo.preload([:client])
   end
 
+  def post_message(channel, message) do
+    Slack.Web.Chat.post_message(
+      channel,
+      message
+    )
+  end
+
+  def post_message_all_client_channels(client_with_channels, message) do
+    Enum.each(client_with_channels.channels, fn c ->
+      post_message(c.slack_id, message)
+    end)
+  end
+
   @spec parse_dm(binary) :: boolean
   def parse_dm("directmessage"), do: true
 
