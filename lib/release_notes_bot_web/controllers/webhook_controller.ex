@@ -29,7 +29,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
 
       _ ->
         # Check if repo exists.
-        {:ok, repo} = Repositories.find_or_create(body["repository"])
+        {:ok, repo} = Repositories.find_or_create_by_webhook(body["repository"])
         # Persist the event to local postgres instance
         WebhookEvents.create_async(body, repo.id)
     end
