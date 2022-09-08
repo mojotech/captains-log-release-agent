@@ -16,10 +16,10 @@ defmodule ReleaseNotesBotWeb.SlackInteractionController do
           "#{user["name"]} has configured this channel to accept messages and updates for projects under: #{client_name}"
         )
 
-      %{client: client_name, project: project_name} ->
-        Channels.post_message(
-          Application.get_env(:release_notes_bot, :slack_channel),
-          "#{user["name"]} has created a new project for #{client_name} titled: '#{project_name}'"
+      %{client: client, project: project_name} ->
+        Channels.post_message_all_client_channels(
+          client,
+          "#{user["name"]} has created a new project for #{client.name} titled: '#{project_name}'"
         )
 
       %{details: details, client: client} when client.channels != nil ->

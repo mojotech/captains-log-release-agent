@@ -6,7 +6,7 @@ defmodule ReleaseNotesBot.Projects do
   """
   alias ReleaseNotesBot.Repo
   alias ReleaseNotesBot.Schema.Project
-  alias ReleaseNotesBot.{Clients, Channels}
+  alias ReleaseNotesBot.{Clients, Channels, Repositories}
 
   def create(params) do
     %Project{}
@@ -28,18 +28,25 @@ defmodule ReleaseNotesBot.Projects do
     parse_inner_response(view["state"]["values"])
   end
 
-  defp parse_inner_response(%{"client-select" => selected_client, "create_project" => input}) do
+  defp parse_inner_response(%{
+         "client-select" => selected_client,
+         "create_project" => input,
+         "repo-url" => repo_input
+       }) do
     client_id =
       String.to_integer(selected_client["static_select-action"]["selected_option"]["value"])
 
-    client = Clients.get(id: client_id)
+    client = Clients.get_channels(client_id)
+    project_name = input["input_action"]["value"]
 
-    __MODULE__.create(%{
-      "name" => input["input_action"]["value"],
-      "client_id" => client_id
-    })
+    {:ok, new_project} =
+      create(%{
+        "name" => project_name,
+        "client_id" => client_id
+      })
 
-    %{client: client.name, project: input["input_action"]["value"]}
+    Repositories.find_or_create_by_slack(new_project.id, repo_input["repo-url-input"]["value"])
+    %{client: client, project: project_name}
   end
 
   defp parse_inner_response(%{"create_client" => input}) do
