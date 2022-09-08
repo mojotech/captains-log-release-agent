@@ -6,7 +6,7 @@ defmodule ReleaseNotesBot.Projects do
   """
   alias ReleaseNotesBot.Repo
   alias ReleaseNotesBot.Schema.Project
-  alias ReleaseNotesBot.{Clients, Channels, Repositories}
+  alias ReleaseNotesBot.{Clients, Channels, Repositories, Note, Persists}
 
   def create(params) do
     %Project{}
@@ -88,9 +88,14 @@ defmodule ReleaseNotesBot.Projects do
           message: raw_values["block-note"]["input-notes"]["value"]
         }
 
-        details = Map.put_new(details, :persistence_status, ReleaseNotesBot.Note.persist(details))
+        details =
+          Map.put_new(
+            details,
+            :persistence_status,
+            Persists.persist(details.title, details.message)
+          )
 
-        ReleaseNotesBot.Note.create(%{
+        Note.create(%{
           "project_id" => proj.id,
           "title" => details.title,
           "message" => details.message,
