@@ -91,6 +91,8 @@ Input enviornment variables into `config/runtime.exs` to use on fly.io
 
 Update enviornment variable values with: `flyctl secrets set ENV_NAME=value`
 
+## [System Architecture](https://github.com/mojotech/captains-log-release-agent/tree/main/docs)
+
 ## Learn more
 
   * Official website: https://www.phoenixframework.org/
