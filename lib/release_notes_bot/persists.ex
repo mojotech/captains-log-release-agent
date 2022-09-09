@@ -31,23 +31,20 @@ defmodule ReleaseNotesBot.Persists do
       headers = [{"Content-Type", "application/json"}, {"Authorization", "Basic #{token}"}]
       body = create_body(title, space_id, space_key, parent_id, release)
 
-      {:ok, response} =
-        Finch.build(
-          :post,
-          "https://mojotech.atlassian.net/wiki/rest/api/content",
-          headers,
-          Jason.encode!(body)
-        )
-        |> Finch.request(ReleaseNotesBot.Finch)
-
-      case response.status do
-        # Successful persistence to 3rd party
-        200 ->
-          200
-
-        # Failed persistence to 3rd party
-        _ ->
+      case Finch.request(
+             Finch.build(
+               :post,
+               "https://mojotech.atlassian.net/wiki/rest/api/content",
+               headers,
+               Jason.encode!(body)
+             ),
+             ReleaseNotesBot.Finch
+           ) do
+        {:ok, response} ->
           response.status
+
+        {:error, _reason} ->
+          500
       end
     else
       400
