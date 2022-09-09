@@ -3,9 +3,10 @@ defmodule ReleaseNotesBotWeb.WebhookController do
   This module is used for consuming webhook events.
   """
   use ReleaseNotesBotWeb, :controller
-  alias ReleaseNotesBot.{Projects, WebhookEvents, Repositories, Clients, Channels}
+  alias ReleaseNotesBot.{Projects, WebhookEvents, Repositories, Clients, Channels, Persists}
 
   @release_actions ["published", "edited", "deleted"]
+  @persist_actions ["published"]
 
   def post(conn, params) do
     body = Projects.parse_params(params)
@@ -35,30 +36,38 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     end
   end
 
-  defp process_release(body) do
-    # Filter out release events that we don't care about.
-    if body["action"] in @release_actions do
-      %{"repository" => repo} = body
+  defp process_release(body = %{"release" => release, "repository" => repo, "action" => action})
+       when action in @release_actions do
+    case repo_match = Repositories.get(observed_id: Integer.to_string(repo["id"])) do
+      # Check if incoming repo url/id exists as a repo entry and has a project relation
+      %{project_id: project_id} when project_id != nil ->
+        WebhookEvents.create_async(body, repo_match.id)
 
-      case repo_match = Repositories.get(observed_id: Integer.to_string(repo["id"])) do
-        # Check if incoming repo url/id exists as a repo entry and has a project relation
-        %{project_id: project_id} when project_id != nil ->
-          WebhookEvents.create_async(body, repo_match.id)
+        # TO DO: We can request what the settings are for each event then handle them accordingly
+        # TO DO: Simplify repo -> project -> client -> channel relation
+        project = Projects.get(id: project_id)
 
-          # TO DO: We can request what the settings are for each event then handle them accordingly
-          # TO DO: Simplify repo -> project -> client -> channel relation
-          project = Projects.get(id: project_id)
+        # Build message and push a slack message to all channels
+        Channels.post_message_all_client_channels(
+          Clients.get_channels(project.client_id),
+          build_message(body)
+        )
 
-          # Build message and push a slack message to all channels
-          Channels.post_message_all_client_channels(
-            Clients.get_channels(project.client_id),
-            build_message(body)
+        # Persist to persistence provider
+        if action in @persist_actions do
+          Persists.persist(
+            "#{repo["full_name"]} - #{action} - #{release["tag_name"]} - #{release["name"]}",
+            release["body"]
           )
+        end
 
-        _ ->
-          nil
-      end
+      _ ->
+        nil
     end
+  end
+
+  defp process_release(_) do
+    nil
   end
 
   def build_message(%{"release" => release, "repository" => repo, "action" => action}) do
