@@ -29,8 +29,10 @@ defmodule ReleaseNotesBotWeb.SlackInteractionController do
         )
 
       %{client: client_name} ->
+        # TO DO: send user a pm with links to docs
+        # TO DO: register this channel with the client and send a message there.
         Channels.post_message(
-          Application.get_env(:release_notes_bot, :slack_channel),
+          Application.get_env(:release_notes_bot, :slack_blast_channel),
           "#{user["name"]} has created new client: #{client_name}"
         )
 
