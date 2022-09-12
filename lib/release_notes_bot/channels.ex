@@ -58,7 +58,7 @@ defmodule ReleaseNotesBot.Channels do
 
   def post_message_all_client_channels(client_with_channels, message) do
     Enum.each(client_with_channels.channels, fn c ->
-      post_message(c.slack_id, message)
+      Task.async(fn -> post_message(c.slack_id, message) end)
     end)
   end
 
