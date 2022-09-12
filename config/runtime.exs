@@ -69,6 +69,22 @@ if config_env() == :prod do
 
   config :slack, api_token: System.get_env("SLACK_BOT_TOKEN")
 
+  config :release_notes_bot, slack_blast_channel: System.get_env("SLACK_BLAST_CHANNEL")
+
+  config :release_notes_bot, confluence_space_key: System.get_env("CONFLUENCE_SPACE_KEY")
+
+  config :release_notes_bot, confluence_space_id: System.get_env("CONFLUENCE_SPACE_ID")
+
+  config :release_notes_bot, confluence_parent_id: System.get_env("CONFLUENCE_PARENT_ID")
+
+  config :release_notes_bot, confluence_email: System.get_env("CONFLUENCE_EMAIL")
+
+  config :release_notes_bot, confluence_api_key: System.get_env("CONFLUENCE_API_KEY")
+
+  config :release_notes_bot, client_secret: System.get_env("CLIENT_SECRET")
+
+  config :release_notes_bot, client_id: System.get_env("CLIENT_ID")
+
   # ## Configuring the mailer
   #
   # In production you need to configure the mailer to use a different adapter.
