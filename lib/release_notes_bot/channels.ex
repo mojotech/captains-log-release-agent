@@ -60,6 +60,11 @@ defmodule ReleaseNotesBot.Channels do
     Enum.each(client_with_channels.channels, fn c ->
       Task.async(fn -> post_message(c.slack_id, message) end)
     end)
+
+    # This sends the message to the slack channel that is used for temporary internal logging and QA
+    Task.async(fn ->
+      post_message(Application.get_env(:release_notes_bot, :slack_blast_channel), message)
+    end)
   end
 
   @spec parse_dm(binary) :: boolean

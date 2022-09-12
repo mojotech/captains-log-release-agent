@@ -53,7 +53,7 @@ config :release_notes_bot,
 
 config :slack, api_token: System.get_env("SLACK_BOT_TOKEN")
 
-config :release_notes_bot, slack_channel: System.get_env("SLACK_CHANNEL")
+config :release_notes_bot, slack_blast_channel: System.get_env("SLACK_BLAST_CHANNEL")
 
 config :release_notes_bot, confluence_space_key: System.get_env("CONFLUENCE_SPACE_KEY")
 
