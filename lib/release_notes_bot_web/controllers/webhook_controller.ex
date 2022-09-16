@@ -35,6 +35,10 @@ defmodule ReleaseNotesBotWeb.WebhookController do
         {:ok, repo} = Repositories.find_or_create_by_webhook(body["repository"])
         # Persist the event to local postgres instance
         WebhookEvents.create_async(body, repo.id)
+
+        Channels.post_blast_message(
+          "New webhook ping event received for #{repo.full_name}.. Created new repository record."
+        )
     end
   end
 
