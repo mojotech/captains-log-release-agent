@@ -72,9 +72,9 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     end
   end
 
-  defp process_release(_) do
-    nil
-  end
+  defp process_release(_), do: nil
+
+  defp replace_bullets(body), do: String.replace("\n" <> body, ["\n* ", "\n- "], "\n• ")
 
   def build_message(%{"release" => release, "repository" => repo, "action" => action}) do
     case action do
@@ -82,10 +82,10 @@ defmodule ReleaseNotesBotWeb.WebhookController do
         "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} the release on tag: #{release["tag_name"]}"
 
       "edited" ->
-        "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} the release on tag: #{release["tag_name"]}\n\nDetails:\n#{release["body"]}"
+        "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} the release on tag: #{release["tag_name"]}\n\nDetails:\n#{replace_bullets(release["body"])}"
 
       _ ->
-        "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} '#{release["name"]}' on tag: '#{release["tag_name"]}'\n\nDetails:\n#{release["body"]}"
+        "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} '#{release["name"]}' on tag: '#{release["tag_name"]}'\n\nDetails:\n#{replace_bullets(release["body"])}"
     end
   end
 end
