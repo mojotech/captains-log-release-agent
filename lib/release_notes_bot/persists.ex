@@ -9,10 +9,14 @@ defmodule ReleaseNotesBot.Persists do
     |> Persist.changeset(params)
   end
 
-  def persist(title, release) do
+  def persist(
+        title,
+        release,
+        space_parent_id \\ Application.get_env(:release_notes_bot, :confluence_parent_id)
+      ) do
     space_id = Application.get_env(:release_notes_bot, :confluence_space_id)
     space_key = Application.get_env(:release_notes_bot, :confluence_space_key)
-    parent_id = Application.get_env(:release_notes_bot, :confluence_parent_id)
+    parent_id = space_parent_id
     user = Application.get_env(:release_notes_bot, :confluence_email)
     apikey = Application.get_env(:release_notes_bot, :confluence_api_key)
     token = Base.encode64("#{user}:#{apikey}")
