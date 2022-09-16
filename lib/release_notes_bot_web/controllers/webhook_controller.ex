@@ -7,6 +7,8 @@ defmodule ReleaseNotesBotWeb.WebhookController do
 
   @release_actions ["published", "edited", "deleted"]
   @persist_actions ["published"]
+  @source_adv_repo_url "https://github.com/mojotech/source_advisors"
+  @source_adv_confluence 48_070_657
 
   def post(conn, params) do
     body = Projects.parse_params(params)
@@ -55,10 +57,14 @@ defmodule ReleaseNotesBotWeb.WebhookController do
 
         # Persist to persistence provider
         if action in @persist_actions do
-          Persists.persist(
-            "#{repo["full_name"]} - #{action} - #{release["tag_name"]} - #{release["name"]}",
-            release["body"]
-          )
+          if repo_match.url == @source_adv_repo_url do
+            Persists.persist(release["name"], release["body"], @source_adv_confluence)
+          else
+            Persists.persist(
+              "#{repo["full_name"]} - #{action} - #{release["tag_name"]} - #{release["name"]}",
+              release["body"]
+            )
+          end
         end
 
       _ ->
