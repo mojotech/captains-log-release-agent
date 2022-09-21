@@ -42,7 +42,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     end
   end
 
-  defp process_release(body = %{"release" => release, "repository" => repo, "action" => action})
+  defp process_release(body = %{"repository" => repo, "action" => action})
        when action in @release_actions do
     case repo_match = Repositories.get(observed_id: Integer.to_string(repo["id"])) do
       # Check if incoming repo url/id exists as a repo entry and has a project relation
@@ -59,17 +59,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
           build_message(body)
         )
 
-        # Persist to persistence provider
-        if action in @persist_actions do
-          if repo_match.url == @source_adv_repo_url do
-            Persists.persist(release["name"], release["body"], @source_adv_confluence)
-          else
-            Persists.persist(
-              "#{repo["full_name"]} - #{action} - #{release["tag_name"]} - #{release["name"]}",
-              release["body"]
-            )
-          end
-        end
+        determine_persistence(body, repo_match.url)
 
       _ ->
         nil
@@ -90,6 +80,17 @@ defmodule ReleaseNotesBotWeb.WebhookController do
 
       _ ->
         "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} '#{release["name"]}' on tag: '#{release["tag_name"]}'\n\nDetails:\n#{replace_bullets(release["body"])}"
+    end
+  end
+
+  defp determine_persistence(%{"release" => release, "action" => action}, match_url) do
+    # Persist to persistence provider
+    if action in @persist_actions do
+      if match_url == @source_adv_repo_url do
+        Persists.persist(release["name"], release["body"], @source_adv_confluence)
+      else
+        Persists.persist(release["name"], release["body"])
+      end
     end
   end
 end
