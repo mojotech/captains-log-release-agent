@@ -16,6 +16,7 @@ defmodule ReleaseNotesBot.Persists do
     user = Application.get_env(:release_notes_bot, :confluence_email)
     apikey = Application.get_env(:release_notes_bot, :confluence_api_key)
     token = Base.encode64("#{user}:#{apikey}")
+    release = Earmark.as_html!(release, %Earmark.Options{compact_output: true})
 
     r =
       sanitize(%{
@@ -68,7 +69,7 @@ defmodule ReleaseNotesBot.Persists do
       ],
       body: %{
         storage: %{
-          value: "<p>#{page_text}</p>",
+          value: page_text,
           representation: "storage"
         }
       }
