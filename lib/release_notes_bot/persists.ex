@@ -68,8 +68,8 @@ defmodule ReleaseNotesBot.Persists do
       ],
       body: %{
         storage: %{
-          value: "<p>#{page_text}</p>",
-          representation: "storage"
+          value: page_text,
+          representation: "wiki"
         }
       }
     }
