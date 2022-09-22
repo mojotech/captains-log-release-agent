@@ -11,6 +11,7 @@ defmodule ReleaseNotesBot.Schema.Project do
     field(:name, :string)
     belongs_to(:client, ReleaseNotesBot.Schema.Client)
     has_many(:notes, ReleaseNotesBot.Schema.Note)
+    has_many(:project_provider, ReleaseNotesBot.Schema.ProjectProvider)
 
     timestamps()
   end
