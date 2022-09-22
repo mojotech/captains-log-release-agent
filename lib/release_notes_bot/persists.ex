@@ -22,7 +22,7 @@ defmodule ReleaseNotesBot.Persists do
     organization = "mojotech"
     endpoint_url = "https://#{organization}.atlassian.net/wiki/"
     endpoint_persistence = endpoint_url <> "rest/api/content"
-    endpoint_source = endpoint_url <> "spaces/#{space_key}/pages/#{parent_id}/#{title}"
+    endpoint_source = endpoint_url <> "spaces/#{space_key}/pages/"
     token = Base.encode64("#{user}:#{apikey}")
     release = Earmark.as_html!(release, %Earmark.Options{compact_output: true})
 
@@ -53,8 +53,12 @@ defmodule ReleaseNotesBot.Persists do
              ),
              ReleaseNotesBot.Finch
            ) do
-        {:ok, _response} ->
-          {:ok, endpoint_source}
+        {:ok, response} ->
+          {:ok, load} = Jason.decode(response.body)
+
+          {:ok,
+           endpoint_source <>
+             "#{load["id"]}/#{title |> replace_spaces_with_plus_signs |> drop_question_mark}"}
 
         {:error, _reason} ->
           {:error, 500}
@@ -87,4 +91,8 @@ defmodule ReleaseNotesBot.Persists do
       }
     }
   end
+
+  defp replace_spaces_with_plus_signs(string), do: String.replace(string, " ", "+")
+
+  defp drop_question_mark(string), do: String.replace(string, "?", "")
 end
