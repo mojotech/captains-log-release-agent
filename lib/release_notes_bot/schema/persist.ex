@@ -12,12 +12,38 @@ defmodule ReleaseNotesBot.Schema.Persist do
     field(:space_id, :string)
     field(:space_key, :string)
     field(:parent_id, :string)
+    field(:organization, :string)
+    field(:endpoint_url, :string)
+    field(:endpoint_persistence, :string)
+    field(:endpoint_source, :string)
     field(:token, :string)
   end
 
   def changeset(persist, params) do
     persist
-    |> cast(params, [:title, :message, :space_id, :space_key, :parent_id, :token])
-    |> validate_required([:title, :message, :space_id, :space_key, :parent_id, :token])
+    |> cast(params, [
+      :title,
+      :message,
+      :space_id,
+      :space_key,
+      :parent_id,
+      :token,
+      :endpoint_url,
+      :endpoint_persistence,
+      :endpoint_source,
+      :organization
+    ])
+    |> validate_required([
+      :title,
+      :message,
+      :space_id,
+      :space_key,
+      :parent_id,
+      :token,
+      :endpoint_url,
+      :endpoint_persistence,
+      :endpoint_source,
+      :organization
+    ])
   end
 end

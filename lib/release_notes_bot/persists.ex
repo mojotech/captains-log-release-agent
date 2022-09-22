@@ -19,6 +19,10 @@ defmodule ReleaseNotesBot.Persists do
     parent_id = space_parent_id
     user = Application.get_env(:release_notes_bot, :confluence_email)
     apikey = Application.get_env(:release_notes_bot, :confluence_api_key)
+    organization = "mojotech"
+    endpoint_url = "https://#{organization}.atlassian.net/wiki/"
+    endpoint_persistence = endpoint_url <> "rest/api/content"
+    endpoint_source = endpoint_url <> "spaces/#{space_key}/pages/#{parent_id}/#{title}"
     token = Base.encode64("#{user}:#{apikey}")
     release = Earmark.as_html!(release, %Earmark.Options{compact_output: true})
 
@@ -29,6 +33,10 @@ defmodule ReleaseNotesBot.Persists do
         :space_id => "#{space_id}",
         :space_key => "#{space_key}",
         :parent_id => "#{parent_id}",
+        :organization => "#{organization}",
+        :endpoint_url => "#{endpoint_url}",
+        :endpoint_persistence => "#{endpoint_persistence}",
+        :endpoint_source => "#{endpoint_source}",
         :token => "#{token}"
       })
 
@@ -39,7 +47,7 @@ defmodule ReleaseNotesBot.Persists do
       case Finch.request(
              Finch.build(
                :post,
-               "https://mojotech.atlassian.net/wiki/rest/api/content",
+               endpoint_persistence,
                headers,
                Jason.encode!(body)
              ),
