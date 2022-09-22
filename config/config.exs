@@ -61,6 +61,8 @@ config :release_notes_bot, confluence_space_id: System.get_env("CONFLUENCE_SPACE
 
 config :release_notes_bot, confluence_parent_id: System.get_env("CONFLUENCE_PARENT_ID")
 
+config :release_notes_bot, confluence_organization: System.get_env("CONFLUENCE_ORGANIZATION")
+
 config :release_notes_bot, confluence_email: System.get_env("CONFLUENCE_EMAIL")
 
 config :release_notes_bot, confluence_api_key: System.get_env("CONFLUENCE_API_KEY")
