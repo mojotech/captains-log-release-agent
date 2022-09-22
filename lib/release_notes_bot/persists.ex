@@ -53,14 +53,14 @@ defmodule ReleaseNotesBot.Persists do
              ),
              ReleaseNotesBot.Finch
            ) do
-        {:ok, response} ->
-          response.status
+        {:ok, _response} ->
+          {:ok, endpoint_source}
 
         {:error, _reason} ->
-          500
+          {:error, 500}
       end
     else
-      400
+      {:error, 400}
     end
   end
 

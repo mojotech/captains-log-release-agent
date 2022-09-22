@@ -9,6 +9,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
   @persist_actions ["published"]
   @source_adv_repo_url "https://github.com/mojotech/source_advisors"
   @source_adv_confluence 48_070_657
+  @view_on_persistence_message "View on Confluence"
 
   def post(conn, params) do
     body = Projects.parse_params(params)
@@ -53,13 +54,13 @@ defmodule ReleaseNotesBotWeb.WebhookController do
         # TO DO: Simplify repo -> project -> client -> channel relation
         project = Projects.get(id: project_id)
 
+        {:ok, persistence_location} = determine_persistence(body, repo_match.url)
+
         # Build message and push a slack message to all channels
         Channels.post_message_all_client_channels(
           Clients.get_channels(project.client_id),
-          build_message(body)
+          build_message(body, persistence_location)
         )
-
-        determine_persistence(body, repo_match.url)
 
       _ ->
         nil
@@ -70,13 +71,19 @@ defmodule ReleaseNotesBotWeb.WebhookController do
 
   defp replace_bullets(body), do: String.replace("\n" <> body, ["\n* ", "\n- "], "\n• ")
 
-  def build_message(%{"release" => release, "repository" => repo, "action" => action}) do
+  def build_message(
+        %{"release" => release, "repository" => repo, "action" => action},
+        persistence
+      ) do
     case action do
       "deleted" ->
         "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} the release on tag: #{release["tag_name"]}"
 
       "edited" ->
         "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} the release on tag: #{release["tag_name"]}\n\nDetails:\n#{replace_bullets(release["body"])}"
+
+      "published" ->
+        "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} '#{release["name"]}' on tag: '#{release["tag_name"]}'\n\nDetails:\n#{replace_bullets(release["body"])}\n\n#{build_slack_url_embed(persistence, @view_on_persistence_message)}"
 
       _ ->
         "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} '#{release["name"]}' on tag: '#{release["tag_name"]}'\n\nDetails:\n#{replace_bullets(release["body"])}"
@@ -87,12 +94,20 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     # Persist to persistence provider
     if action in @persist_actions do
       if match_url == @source_adv_repo_url do
-        Persists.persist(build_persistence_title(release), release["body"], @source_adv_confluence)
+        Persists.persist(
+          build_persistence_title(release),
+          release["body"],
+          @source_adv_confluence
+        )
       else
         Persists.persist(build_persistence_title(release), release["body"])
       end
+    else
+      {:ok, nil}
     end
   end
 
   defp build_persistence_title(release), do: release["name"]
+
+  defp build_slack_url_embed(url, text), do: "<#{url}|#{text}>"
 end

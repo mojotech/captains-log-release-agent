@@ -92,7 +92,7 @@ defmodule ReleaseNotesBot.Projects do
           Map.put_new(
             details,
             :persistence_status,
-            Persists.persist(details.title, details.message)
+            details.title |> Persists.persist(details.message) |> interpret_status
           )
 
         Note.create(%{
@@ -119,6 +119,16 @@ defmodule ReleaseNotesBot.Projects do
 
   def parse_params(params = %{}) do
     params
+  end
+
+  defp interpret_status(result) do
+    case result do
+      {:ok, _} ->
+        200
+
+      {:error, status} ->
+        status
+    end
   end
 
   defp interpret_persisted(status) do
