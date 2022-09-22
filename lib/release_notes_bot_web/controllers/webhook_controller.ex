@@ -87,10 +87,12 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     # Persist to persistence provider
     if action in @persist_actions do
       if match_url == @source_adv_repo_url do
-        Persists.persist(release["name"], release["body"], @source_adv_confluence)
+        Persists.persist(build_persistence_title(release), release["body"], @source_adv_confluence)
       else
-        Persists.persist(release["name"], release["body"])
+        Persists.persist(build_persistence_title(release), release["body"])
       end
     end
   end
+
+  defp build_persistence_title(release), do: release["name"]
 end
