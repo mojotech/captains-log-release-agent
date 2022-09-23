@@ -3,6 +3,7 @@ defmodule ReleaseNotesBot.Schema.PersistenceProvider do
   This module is used to model Project Tokens
   """
   use Ecto.Schema
+  import Ecto.Changeset
 
   schema "persistence_providers" do
     field(:name, :string)
@@ -10,5 +11,11 @@ defmodule ReleaseNotesBot.Schema.PersistenceProvider do
     has_many(:project_provider, ReleaseNotesBot.Schema.ProjectProvider)
 
     timestamps()
+  end
+
+  def changeset(persistence_provider, params) do
+    persistence_provider
+    |> cast(params, [:name])
+    |> validate_required([:name])
   end
 end
