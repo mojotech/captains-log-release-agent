@@ -6,7 +6,7 @@ defmodule ReleaseNotesBot.Projects do
   """
   alias ReleaseNotesBot.Repo
   alias ReleaseNotesBot.Schema.Project
-  alias ReleaseNotesBot.{Clients, Channels, Repositories, Note, Persists}
+  alias ReleaseNotesBot.{Clients, Channels, Repositories, Note, Persists, ProjectProviders}
 
   def create(params) do
     %Project{}
@@ -44,6 +44,8 @@ defmodule ReleaseNotesBot.Projects do
         "name" => project_name,
         "client_id" => client_id
       })
+
+    ProjectProviders.create(%{"project_id" => new_project.id})
 
     Repositories.find_or_create_by_slack(new_project.id, repo_input["repo-url-input"]["value"])
     %{client: client, project: project_name}
