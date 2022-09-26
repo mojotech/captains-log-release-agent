@@ -13,4 +13,4 @@
 import ReleaseNotesBot.Factory
 alias ReleaseNotesBot.Note
 
-Note.get(id: 1) || insert_test()
+Note.get(id: 1) || insert_seeds()
