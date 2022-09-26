@@ -9,67 +9,129 @@ defmodule ReleaseNotesBot.Persists do
     |> Persist.changeset(params)
   end
 
+  def parse_params(
+        release_title,
+        release_body,
+        persistence_provider_id \\ 1,
+        project_persist_config \\ %{}
+      ) do
+    case persistence_provider_id do
+      # Confluence
+      1 ->
+        space_id =
+          "#{project_persist_config["space_id"] || Application.get_env(:release_notes_bot, :confluence_space_id)}"
+
+        space_key =
+          "#{project_persist_config["space_key"] || Application.get_env(:release_notes_bot, :confluence_space_key)}"
+
+        parent_id =
+          "#{project_persist_config["parent_id"] || Application.get_env(:release_notes_bot, :confluence_parent_id)}"
+
+        organization =
+          "#{project_persist_config["organization"] || Application.get_env(:release_notes_bot, :confluence_organization)}"
+
+        user = Application.get_env(:release_notes_bot, :confluence_email)
+        apikey = Application.get_env(:release_notes_bot, :confluence_api_key)
+        token = Base.encode64("#{user}:#{apikey}")
+        endpoint_url = "https://#{organization}.atlassian.net/wiki/"
+        release = Earmark.as_html!(release_body, %Earmark.Options{compact_output: true})
+
+        sanitize(%{
+          :title => release_title,
+          :message => release,
+          :space_id => space_id,
+          :space_key => space_key,
+          :parent_id => parent_id,
+          :organization => organization,
+          :endpoint_url => endpoint_url,
+          :endpoint_persistence => endpoint_url <> "rest/api/content",
+          :endpoint_source => endpoint_url <> "spaces/#{space_key}/pages/",
+          :token => token
+        })
+
+      _ ->
+        sanitize(%{})
+    end
+  end
+
   def persist(
         title,
         release,
-        space_parent_id \\ Application.get_env(:release_notes_bot, :confluence_parent_id)
+        project_provider
       ) do
-    space_id = Application.get_env(:release_notes_bot, :confluence_space_id)
-    space_key = Application.get_env(:release_notes_bot, :confluence_space_key)
-    parent_id = space_parent_id
-    user = Application.get_env(:release_notes_bot, :confluence_email)
-    apikey = Application.get_env(:release_notes_bot, :confluence_api_key)
-    organization = "mojotech"
-    endpoint_url = "https://#{organization}.atlassian.net/wiki/"
-    endpoint_persistence = endpoint_url <> "rest/api/content"
-    endpoint_source = endpoint_url <> "spaces/#{space_key}/pages/"
-    token = Base.encode64("#{user}:#{apikey}")
-    release = Earmark.as_html!(release, %Earmark.Options{compact_output: true})
+    sanitizer =
+      parse_params(
+        title,
+        release,
+        project_provider.persistence_provider_id,
+        project_provider.config
+      )
 
-    r =
-      sanitize(%{
-        :title => "#{title}",
-        :message => "#{release}",
-        :space_id => "#{space_id}",
-        :space_key => "#{space_key}",
-        :parent_id => "#{parent_id}",
-        :organization => "#{organization}",
-        :endpoint_url => "#{endpoint_url}",
-        :endpoint_persistence => "#{endpoint_persistence}",
-        :endpoint_source => "#{endpoint_source}",
-        :token => "#{token}"
-      })
+    if sanitizer.valid? do
+      case select_provider_to_persist(project_provider.persistence_provider_id, sanitizer.changes) do
+        {:ok, endpoint} ->
+          {:ok, endpoint}
 
-    if r.valid? == true do
-      headers = [{"Content-Type", "application/json"}, {"Authorization", "Basic #{token}"}]
-      body = create_body(title, space_id, space_key, parent_id, release)
-
-      case Finch.request(
-             Finch.build(
-               :post,
-               endpoint_persistence,
-               headers,
-               Jason.encode!(body)
-             ),
-             ReleaseNotesBot.Finch
-           ) do
-        {:ok, response} ->
-          {:ok, load} = Jason.decode(response.body)
-
-          {:ok,
-           endpoint_source <>
-             "#{load["id"]}/#{title |> replace_spaces_with_plus_signs |> drop_question_mark}"}
-
-        {:error, _reason} ->
-          {:error, 500}
+        {:error, message} ->
+          {:error, message}
       end
     else
-      {:error, 400}
+      {:error, "Invalid params.. Could not sanitize.."}
+    end
+  end
+
+  def select_provider_to_persist(persistence_provider_id, sanitizer_changes) do
+    case persistence_provider_id do
+      # Confluence
+      1 ->
+        case persist_confluence(sanitizer_changes) do
+          {:ok, endpoint} ->
+            {:ok, endpoint}
+
+          {:error, _} ->
+            {:error, "Error persisting"}
+        end
+
+      _ ->
+        {:error, "Invalid persistence provider"}
+    end
+  end
+
+  def persist_confluence(data) do
+    headers = [{"Content-Type", "application/json"}, {"Authorization", "Basic #{data.token}"}]
+
+    body =
+      create_confluence_body(
+        data.title,
+        data.space_id,
+        data.space_key,
+        data.parent_id,
+        data.message
+      )
+
+    case Finch.request(
+           Finch.build(
+             :post,
+             data.endpoint_persistence,
+             headers,
+             Jason.encode!(body)
+           ),
+           ReleaseNotesBot.Finch
+         ) do
+      {:ok, response} ->
+        payload = Jason.decode!(response.body)
+
+        {:ok,
+         data.endpoint_source <>
+           "#{payload["id"]}/#{data.title |> replace_spaces_with_plus_signs |> drop_question_mark}"}
+
+      {:error, _reason} ->
+        {:error, 500}
     end
   end
 
   # https://developer.atlassian.com/server/confluence/confluence-rest-api-examples/#create-a-new-page
-  defp create_body(page_title, space_id, space_key, parent_id, page_text) do
+  defp create_confluence_body(page_title, space_id, space_key, parent_id, page_text) do
     %{
       title: page_title,
       type: "page",

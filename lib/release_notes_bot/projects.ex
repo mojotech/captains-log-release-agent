@@ -84,7 +84,7 @@ defmodule ReleaseNotesBot.Projects do
   defp parse_inner_response(raw_values) do
     project_id = raw_values["block-title"]["select-title-action"]["selected_option"]["value"]
 
-    case __MODULE__.get(id: String.to_integer(project_id)) do
+    case __MODULE__.get_provider(id: String.to_integer(project_id)) do
       nil ->
         nil
 
@@ -96,18 +96,26 @@ defmodule ReleaseNotesBot.Projects do
           message: raw_values["block-note"]["input-notes"]["value"]
         }
 
+        # Persist the note
+        endpoint = determine_persisted(details, proj.project_provider)
+        # Persists.persist(
+        #   details.title,
+        #   details.message,
+        #   Enum.take(proj.project_provider, 1) |> List.first()
+        # )
+
         details =
           Map.put_new(
             details,
-            :persistence_status,
-            details.title |> Persists.persist(details.message) |> interpret_status
+            :persistence_url,
+            endpoint
           )
 
         Note.create(%{
           "project_id" => proj.id,
           "title" => details.title,
           "message" => details.message,
-          "persisted" => interpret_persisted(details.persistence_status)
+          "persisted" => interpret_persisted(endpoint)
         })
 
         case raw_values["block-here"]["checkbox-here"]["selected_options"] do
@@ -120,6 +128,20 @@ defmodule ReleaseNotesBot.Projects do
     end
   end
 
+  def determine_persisted(details, project_provider) do
+    case Persists.persist(
+           details.title,
+           details.message,
+           Enum.take(project_provider, 1) |> List.first()
+         ) do
+      {:ok, endpoint} ->
+        endpoint
+
+      _ ->
+        nil
+    end
+  end
+
   def parse_params(%{"payload" => load}) when is_binary(load) do
     {:ok, res} = Jason.decode(load)
     res
@@ -129,23 +151,13 @@ defmodule ReleaseNotesBot.Projects do
     params
   end
 
-  defp interpret_status(result) do
-    case result do
-      {:ok, _} ->
-        200
-
-      {:error, status} ->
-        status
-    end
-  end
-
   defp interpret_persisted(status) do
     case status do
-      200 ->
-        true
+      nil ->
+        false
 
       _ ->
-        false
+        true
     end
   end
 end
