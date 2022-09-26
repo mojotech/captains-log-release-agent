@@ -6,7 +6,16 @@ defmodule ReleaseNotesBot.Projects do
   """
   alias ReleaseNotesBot.Repo
   alias ReleaseNotesBot.Schema.Project
-  alias ReleaseNotesBot.{Clients, Channels, Repositories, Note, Persists, ProjectProviders}
+
+  alias ReleaseNotesBot.{
+    Clients,
+    Channels,
+    Repositories,
+    Note,
+    Persists,
+    ProjectProviders,
+    PersistenceProviders
+  }
 
   def create(params) do
     %Project{}
@@ -37,7 +46,8 @@ defmodule ReleaseNotesBot.Projects do
   defp parse_inner_response(%{
          "client-select" => selected_client,
          "create_project" => input,
-         "repo-url" => repo_input
+         "repo-url" => repo_input,
+         "project-provider" => provider_input
        }) do
     client_id =
       String.to_integer(selected_client["static_select-action"]["selected_option"]["value"])
@@ -51,7 +61,14 @@ defmodule ReleaseNotesBot.Projects do
         "client_id" => client_id
       })
 
-    ProjectProviders.create(%{"project_id" => new_project.id})
+    if provider_input["project-provider-input"]["value"] != nil do
+      PersistenceProviders.parse_url_and_create(
+        provider_input["project-provider-input"]["value"],
+        new_project.id
+      )
+    else
+      ProjectProviders.create(%{"project_id" => new_project.id})
+    end
 
     Repositories.find_or_create_by_slack(new_project.id, repo_input["repo-url-input"]["value"])
     %{client: client, project: project_name}
