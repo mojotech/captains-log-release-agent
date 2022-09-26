@@ -23,11 +23,11 @@ defmodule ReleaseNotesBot.Views.Components.Modal.Block.Input do
           optional: false,
           type: binary
         }
-  def text(block_id, action_id, top_label, element_label, multiline \\ false) do
+  def text(block_id, action_id, top_label, element_label, multiline \\ false, optional \\ false) do
     %{
       type: @moduletype,
       block_id: block_id,
-      optional: false,
+      optional: optional,
       element: Element.plain_text(action_id, element_label, multiline),
       label: Label.label(top_label)
     }
