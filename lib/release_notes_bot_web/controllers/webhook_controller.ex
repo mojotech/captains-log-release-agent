@@ -7,8 +7,6 @@ defmodule ReleaseNotesBotWeb.WebhookController do
 
   @release_actions ["published", "deleted"]
   @persist_actions ["published"]
-  @source_adv_repo_url "https://github.com/mojotech/source_advisors"
-  @source_adv_confluence 48_070_657
   @view_on_persistence_message "View on Confluence"
 
   def post(conn, params) do
@@ -52,9 +50,8 @@ defmodule ReleaseNotesBotWeb.WebhookController do
 
         # TO DO: We can request what the settings are for each event then handle them accordingly
         # TO DO: Simplify repo -> project -> client -> channel relation
-        project = Projects.get(id: project_id)
-
-        {:ok, persistence_location} = determine_persistence(body, repo_match.url)
+        project = Projects.get_provider(id: project_id)
+        persistence_location = determine_persistence(body, project.project_provider)
 
         # Build message and push a slack message to all channels
         Channels.post_message_all_client_channels(
@@ -82,7 +79,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
       "edited" ->
         "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} the release on tag: #{release["tag_name"]}\n\nDetails:\n#{replace_bullets(release["body"])}"
 
-      "published" ->
+      "published" when is_binary(persistence) ->
         "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} '#{release["name"]}' on tag: '#{release["tag_name"]}'\n\nDetails:\n#{replace_bullets(release["body"])}\n\n#{build_slack_url_embed(persistence, @view_on_persistence_message)}"
 
       _ ->
@@ -90,20 +87,22 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     end
   end
 
-  defp determine_persistence(%{"release" => release, "action" => action}, match_url) do
-    # Persist to persistence provider
+  defp determine_persistence(%{"release" => release, "action" => action}, project_provider) do
+    # Persist to all persistence providers
     if action in @persist_actions do
-      if match_url == @source_adv_repo_url do
-        Persists.persist(
-          build_persistence_title(release),
-          release["body"],
-          @source_adv_confluence
-        )
-      else
-        Persists.persist(build_persistence_title(release), release["body"])
+      case Persists.persist(
+             build_persistence_title(release),
+             release["body"],
+             Enum.take(project_provider, 1) |> List.first()
+           ) do
+        {:ok, endpoint} when is_binary(endpoint) ->
+          endpoint
+
+        _ ->
+          nil
       end
     else
-      {:ok, nil}
+      nil
     end
   end
 

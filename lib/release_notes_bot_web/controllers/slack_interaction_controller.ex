@@ -25,7 +25,7 @@ defmodule ReleaseNotesBotWeb.SlackInteractionController do
       %{details: details, client: client} when client.channels != nil ->
         Channels.post_message_all_client_channels(
           client,
-          "<!here>\n#{user["name"]} has posted a Release Note to '#{details.project}' titled: '#{details.title}'.\nDetails:\n#{details.message}\n\nPersistence Status: #{details.persistence_status}"
+          "<!here>\n#{user["name"]} has posted a Release Note to '#{details.project}' titled: '#{details.title}'.\nDetails:\n#{details.message}\n\nView on Confluence: #{details.persistence_url}"
         )
 
       %{client: client_name} ->
