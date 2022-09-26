@@ -30,8 +30,16 @@ defmodule ReleaseNotesBotWeb.CaptainsView do
         Input.text(
           "repo-url",
           "repo-url-input",
-          "Paste your Project's Repository url (must start wit 'https://')",
+          "Paste your Project's Repository url (must start with 'https://')",
           "Paste repository url here..."
+        ),
+        Input.text(
+          "project-provider",
+          "project-provider-input",
+          "Paste your Project's Confluence url",
+          "Paste Confluence url here...",
+          false,
+          true
         )
       ]
     }
