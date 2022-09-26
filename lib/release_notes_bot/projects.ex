@@ -24,6 +24,12 @@ defmodule ReleaseNotesBot.Projects do
     Repo.get_by(Project, param)
   end
 
+  def get_provider(param) do
+    Project
+    |> Repo.get_by(param)
+    |> Repo.preload([:project_provider])
+  end
+
   def parse_response(view) do
     parse_inner_response(view["state"]["values"])
   end
