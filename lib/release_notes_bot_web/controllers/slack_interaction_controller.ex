@@ -16,10 +16,11 @@ defmodule ReleaseNotesBotWeb.SlackInteractionController do
           "#{user["name"]} has configured this channel to accept messages and updates for projects under: #{client_name}"
         )
 
-      %{client: client, project: project_name} ->
+      %{client: client, project: project_name, peristence: url} ->
         Channels.post_message_all_client_channels(
           client,
-          "#{user["name"]} has created a new project for #{client.name} titled: '#{project_name}'"
+          "#{user["name"]} has created a new project under #{client.name} titled: '#{project_name}'. Release notes will be persisted to " <>
+            where_to_persist(url)
         )
 
       %{details: details, client: client} when client.channels != nil ->
@@ -41,5 +42,12 @@ defmodule ReleaseNotesBotWeb.SlackInteractionController do
     end
 
     Plug.Conn.send_resp(conn, 204, [])
+  end
+
+  defp where_to_persist(url) do
+    case url do
+      nil -> "the default location."
+      _ -> "<#{url}|this specified location>."
+    end
   end
 end

@@ -71,7 +71,12 @@ defmodule ReleaseNotesBot.Projects do
     end
 
     Repositories.find_or_create_by_slack(new_project.id, repo_input["repo-url-input"]["value"])
-    %{client: client, project: project_name}
+
+    %{
+      client: client,
+      project: project_name,
+      peristence: provider_input["project-provider-input"]["value"]
+    }
   end
 
   defp parse_inner_response(%{"create_client" => input}) do
