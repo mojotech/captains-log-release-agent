@@ -70,7 +70,8 @@ defmodule ReleaseNotesBot.Projects do
       ProjectProviders.create(%{"project_id" => new_project.id})
     end
 
-    Repositories.find_or_create_by_slack(new_project.id, repo_input["repo-url-input"]["value"])
+    github_repo_url =
+      Repositories.find_or_create_by_slack(new_project.id, repo_input["repo-url-input"]["value"])
 
     %{
       client: client,

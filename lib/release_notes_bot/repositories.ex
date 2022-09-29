@@ -58,11 +58,15 @@ defmodule ReleaseNotesBot.Repositories do
           project_id: project_id
         })
 
+        repo_url <> "/settings/hooks/new"
+
       # Check if repo exists given its url
       _ ->
         Repositories.update(repo, %{
           project_id: project_id
         })
+
+        nil
     end
   end
 end
