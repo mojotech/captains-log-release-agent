@@ -1,7 +1,6 @@
 # fly.toml file generated for captains-log-dev on 2022-06-09T14:51:25-04:00
 
 app = "captains-log-dev"
-
 kill_signal = "SIGTERM"
 kill_timeout = 5
 processes = []

@@ -34,7 +34,10 @@ npm-debug.log
 
 # env var files
 .envrc
+.env
 
 # postgres volume
 /volumes/
-.env
+
+# the used fly.io config
+fly.toml
