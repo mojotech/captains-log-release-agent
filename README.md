@@ -29,10 +29,11 @@ NOTE: If you are a visual learner, then [this video tutorial](https://drive.goog
 - First, we need the URL for your github or gitlab repository.
   - This can be found from copying the URL from the root of your repository's main/master branch.
 - Go back to your slack channel from the previous step and execute the command: `/captainslog new project`.
-  - This should prompt you with a modal with 3 input fields.
+  - This should prompt you with a modal with 4 input fields.
     - For the first field, select your client.
     - For the second field, enter the name of your project.
-    - For the last field, paste in that URL that you have copied in the previous step. It is very important that the url starts with https and do not contain any query parameters.
+    - For the third field, paste in that URL that you have copied in the previous step. It is very important that the url starts with https and do not contain any query parameters.
+    - The last field is optional, it is requesting where you would like the release note to be persisted to. Right now only Mojotech's Confluence works, but the release note can be persisted to anywhere in there. To specify a place, you need to paste in the full url of direct parent folder/note that you would like all release notes to be persisted under. If you do not specify a persistence url, all notes will be persisted [to this Confluence page](https://mojotech.atlassian.net/wiki/spaces/PM/pages/29458448/The+Captain) by default.
     - Go ahead and submit that.
   - You should receive a message in your channel saying that new project has been added!
   - You may repeat this step for however many projects need to be added.
