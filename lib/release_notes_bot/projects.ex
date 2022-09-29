@@ -76,7 +76,8 @@ defmodule ReleaseNotesBot.Projects do
     %{
       client: client,
       project: project_name,
-      peristence: provider_input["project-provider-input"]["value"]
+      peristence: provider_input["project-provider-input"]["value"],
+      add_webhook: github_repo_url
     }
   end
 

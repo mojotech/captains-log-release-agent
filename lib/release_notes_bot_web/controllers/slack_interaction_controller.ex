@@ -16,11 +16,11 @@ defmodule ReleaseNotesBotWeb.SlackInteractionController do
           "#{user["name"]} has configured this channel to accept messages and updates for projects under: #{client_name}"
         )
 
-      %{client: client, project: project_name, peristence: url} ->
+      %{client: client, project: project_name, peristence: url, add_webhook: webhook} ->
         Channels.post_message_all_client_channels(
           client,
           "#{user["name"]} has created a new project under #{client.name} titled: '#{project_name}'. Release notes will be persisted to " <>
-            where_to_persist(url)
+            where_to_persist(url) <> determine_serve_repo_webhook_url(webhook)
         )
 
       %{details: details, client: client} when client.channels != nil ->
@@ -48,6 +48,13 @@ defmodule ReleaseNotesBotWeb.SlackInteractionController do
     case url do
       nil -> "the default location."
       _ -> "<#{url}|this specified location>."
+    end
+  end
+
+  defp determine_serve_repo_webhook_url(webhook) do
+    case webhook do
+      nil -> ""
+      _ -> ". Click <#{webhook}|this link> to add a webhook to your repository."
     end
   end
 end
