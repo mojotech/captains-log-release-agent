@@ -57,6 +57,14 @@ Follow this guide to [sign into flyctl](https://fly.io/docs/getting-started/log-
 
 See this guide on [how to deploy to fly.io](https://fly.io/docs/getting-started/elixir/#deploying-again)
 
+**NOTE**: Before deploying, you need to
+1. change the name of the `.toml` file based on what env you are deploying to.
+  ex. `cp fly.toml.staging fly.toml`
+1. Choose the right app to deploy to. See all apps with: `flyctl apps list`
+1. use the -a flag to specify the target app name
+
 Input enviornment variables into `config/runtime.exs` to use on fly.io
 
 Update enviornment variable values with: `flyctl secrets set ENV_NAME=value`
+
+Remove enviornment variable values with: `flyctl secrets unset ENV_NAME=value`
