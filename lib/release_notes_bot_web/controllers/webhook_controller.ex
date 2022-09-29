@@ -5,7 +5,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
   use ReleaseNotesBotWeb, :controller
   alias ReleaseNotesBot.{Projects, WebhookEvents, Repositories, Clients, Channels, Persists}
 
-  @release_actions ["published", "edited", "deleted"]
+  @release_actions ["published", "deleted"]
   @persist_actions ["published"]
   @source_adv_repo_url "https://github.com/mojotech/source_advisors"
   @source_adv_confluence 48_070_657
