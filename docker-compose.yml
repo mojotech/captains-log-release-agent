@@ -7,7 +7,28 @@ services:
     volumes:
       - "./volumes/postgres:/var/lib/postgresql/data"
     environment:
-        POSTGRES_USER: ${POSTGRES_USER}
-        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_DB: release_notes
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_HOSTNAME: db
         POSTGRES_HOST_AUTH_METHOD: trust
+  app:
+    build:
+      dockerfile: ./docker/dev/Dockerfile
+      context: ./
+    environment:
+        MIX_ENV: dev
+        SECRET_KEY_BASE: secret
+        DATABASE_URL: postgres://postgres:password@db/release_notes
+        POSTGRES_DB: release_notes
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_HOSTNAME: db
+        PORT: 4002
+    ports:
+      - "4002:4002"
+    volumes:
+      - ".:/app"
+    depends_on:
+      - db
+
