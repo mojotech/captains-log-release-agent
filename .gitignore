@@ -41,3 +41,6 @@ npm-debug.log
 
 # the used fly.io config
 fly.toml
+
+# asdf config - it is not needed anymore
+.tool-versions
