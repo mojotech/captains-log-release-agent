@@ -63,7 +63,7 @@ All commands:
 
 ## Getting a dev instance running:
 
-1. Configure [direv](https://direnv.net/). Then copy `.sample.envrc` to a new `.envrc`. Don't forget to run `direnv allow` after any changes to `.envrc`.
+1. Copy `.env.sample` to a `.env`
 
 2. Install [docker](https://www.docker.com/get-started/) onto your machine, if you do not have it.
 

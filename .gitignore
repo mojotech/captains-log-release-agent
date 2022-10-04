@@ -37,3 +37,4 @@ npm-debug.log
 
 # postgres volume
 /volumes/
+.env

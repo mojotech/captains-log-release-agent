@@ -16,14 +16,11 @@ services:
     build:
       dockerfile: ./docker/dev/Dockerfile
       context: ./
+    env_file: .env
     environment:
         MIX_ENV: dev
         SECRET_KEY_BASE: secret
         DATABASE_URL: postgres://postgres:password@db/release_notes
-        POSTGRES_DB: release_notes
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_HOSTNAME: db
         PORT: 4002
     ports:
       - "4002:4002"
