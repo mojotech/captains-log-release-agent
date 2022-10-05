@@ -27,6 +27,6 @@ defmodule ReleaseNotesBot.Release do
   end
 
   def seed do
-    ReleaseNotesBot.Projects.get(id: 1) || ReleaseNotesBot.Factory.insert_test()
+    ReleaseNotesBot.Projects.get(id: 1) || ReleaseNotesBot.Factory.insert_seeds()
   end
 end
