@@ -4,9 +4,9 @@
 
 2. Install [docker](https://www.docker.com/get-started/) onto your machine, if you do not have it.
 
-3. Build dependencies `docker compose run app mix deps.get`
+3. Build dependencies `bash script/deps`
 
-4. Create and migrate your database with the command: `docker compose run app mix ecto.migrate `.
+4. Create and migrate your database with the command: `bash script/migrate`.
 
 5. Execute `docker-compose up` in the root of the repo. This starts the database and phoenix servers.
 
