@@ -1,3 +1,4 @@
 #!/bin/bash
-docker-compose run app mix deps.get
+script/deps
 docker-compose run app mix ecto.setup
+script/prune
