@@ -53,7 +53,7 @@ defmodule ReleaseNotesBot.MixProject do
       {:slack, "~> 0.23.5"},
       {:ex_machina, "~> 2.7.0"},
       {:finch, "~> 0.12"},
-      {:earmark, "~> 1.4.27"}
+      {:earmark, "~> 1.4.30"}
     ]
   end
 
