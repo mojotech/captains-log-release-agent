@@ -1,3 +1,4 @@
-#/bin/bash
+#!/bin/bash
 docker-compose run app mix credo -a
 docker-compose run app mix format
+script/prune
