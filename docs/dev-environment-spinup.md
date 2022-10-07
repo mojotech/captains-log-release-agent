@@ -10,9 +10,11 @@
 
 5. Execute `docker-compose up` in the root of the repo. This starts the database and phoenix servers.
 
-6. Download and install [ngrok](https://ngrok.com/download) onto your machine if you do not have it. Execute ngrok with the `PORT` that is configured as an enviornment variable: `ngrok http <PORT>`. This starts the ngrok reverse proxy so that way we can get the slack bot working over the web. Depending on how you've installed ngrok, you may have to navigate to the directory on your machine where `ngrok` resides and execute it with a prepended `./`.
+6. (Optional) execute the database seeds with `bash script/seeds`.
 
-7. Open up your [Slack app dev dashboard](https://api.slack.com). For `Captains Log Dev`, [this is the current one](https://api.slack.com/apps/A03L6Q2B6G1). If you do not know what this is, you should ask a teammate to add you to it or create a new slack app yourself. NOTE: reach out to the `#mojotime-release-notes` Slack channel to coordinate development since only one ngrok connection can be live at a time.
+7. Download and install [ngrok](https://ngrok.com/download) onto your machine if you do not have it. Execute ngrok with the `PORT` that is configured as an enviornment variable: `ngrok http <PORT>`. This starts the ngrok reverse proxy so that way we can get the slack bot working over the web. Depending on how you've installed ngrok, you may have to navigate to the directory on your machine where `ngrok` resides and execute it with a prepended `./`.
+
+8. Open up your [Slack app dev dashboard](https://api.slack.com). For `Captains Log Dev`, [this is the current one](https://api.slack.com/apps/A03L6Q2B6G1). If you do not know what this is, you should ask a teammate to add you to it or create a new slack app yourself. NOTE: reach out to the `#mojotime-release-notes` Slack channel to coordinate development since only one ngrok connection can be live at a time.
 
   * Under `Features` on the left, Navigate to `Slash Commands`.
   * Edit the command the command `/captainslogdev`.
@@ -22,9 +24,9 @@
   * Inside the box for `Request URL`, paste your ngrok URL and append `/captainslog/interaction`.
   * Click `Save Changes`.
 
-7. Test to see if everything worked - go into slack and enter the command: `/captainslogdev`
+9. Test to see if everything worked - go into slack and enter the command: `/captainslogdev`
 
-8. Checkout the database! Run these commands in the root of the repo:
+10. Checkout the database! Run these commands in the root of the repo:
   * `docker-compose exec db psql -U postgres -d release_notes`
   * `\dt`
   * `select * from projects;`
