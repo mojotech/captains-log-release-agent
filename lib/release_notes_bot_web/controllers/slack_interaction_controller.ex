@@ -5,6 +5,12 @@ defmodule ReleaseNotesBotWeb.SlackInteractionController do
   """
   use ReleaseNotesBotWeb, :controller
   alias ReleaseNotesBot.{Projects, Channels}
+  alias ReleaseNotesBotWeb.SlackInteractionView
+
+  @channel_config_event "channel-configured-with-client"
+  @new_project_event "new-project"
+  @new_client_event "new-client"
+  @manual_release_event "manual-release"
 
   def index(conn, params) do
     %{"view" => view, "user" => user} = Projects.parse_params(params)
@@ -13,28 +19,37 @@ defmodule ReleaseNotesBotWeb.SlackInteractionController do
       %{client: client_name, channel: channel} ->
         Channels.post_message(
           channel,
-          "#{user["name"]} has configured this channel to accept messages and updates for projects under: #{client_name}"
+          SlackInteractionView.message(@channel_config_event, user["name"], client_name)
         )
 
       %{client: client, project: project_name, peristence: url, add_webhook: webhook} ->
         Channels.post_message_all_client_channels(
           client,
-          "#{user["name"]} has created a new project under #{client.name} titled: '#{project_name}'. Release notes will be persisted to " <>
-            where_to_persist(url) <> determine_serve_repo_webhook_url(webhook)
+          SlackInteractionView.message(
+            @new_project_event,
+            user["name"],
+            client.name,
+            project_name,
+            url,
+            webhook
+          )
         )
 
       %{details: details, client: client} when client.channels != nil ->
         Channels.post_message_all_client_channels(
           client,
-          "<!here>\n#{user["name"]} has posted a Release Note to '#{details.project}' titled: '#{details.title}'.\nDetails:\n#{details.message}\n\nView on Confluence: #{details.persistence_url}"
+          SlackInteractionView.message(
+            @manual_release_event,
+            user["name"],
+            details.project,
+            details
+          )
         )
 
       %{client: client_name} ->
-        # TO DO: send user a pm with links to docs
-        # TO DO: register this channel with the client and send a message there.
         Channels.post_message(
           Application.get_env(:release_notes_bot, :slack_blast_channel),
-          "#{user["name"]} has created new client: #{client_name}"
+          SlackInteractionView.message(@new_client_event, user["name"], client_name)
         )
 
       _ ->
@@ -42,19 +57,5 @@ defmodule ReleaseNotesBotWeb.SlackInteractionController do
     end
 
     Plug.Conn.send_resp(conn, 204, [])
-  end
-
-  defp where_to_persist(url) do
-    case url do
-      nil -> "the default location."
-      _ -> "<#{url}|this specified location>."
-    end
-  end
-
-  defp determine_serve_repo_webhook_url(webhook) do
-    case webhook do
-      nil -> ""
-      _ -> ". Click <#{webhook}|this link> to add a webhook to your repository."
-    end
   end
 end
