@@ -29,10 +29,27 @@ defmodule ReleaseNotesBotWeb.SlackInteractionView do
     end
   end
 
+  defp repo_setup_help() do
+    "
+    • In github, you're going to need to be a repository admin to complete this step
+    • From your repository, navigate to `Settings > Webhooks > Add webhook`
+      • From here, enter in this endpoint for `Payload URL`: `https://captains-log.fly.dev/webhook`
+      • For Content type, leave the default selection of `application/x-www-form-urlencoded`
+      • There is no need to enter in any value for `Secret`
+      • Then, click `Let me select individual events`
+      • Scroll down, unselect `Pushes` and select `Releases`
+      • Then scroll down and click the `Add webhook` button
+    "
+  end
+
   defp determine_serve_repo_webhook_url(webhook) do
     case webhook do
-      nil -> ""
-      _ -> ". Click <#{webhook}|this link> to add a webhook to your repository."
+      nil ->
+        ""
+
+      _ ->
+        " Click <#{webhook}|this link> to add a webhook to your repository.\n" <>
+          repo_setup_help()
     end
   end
 end
