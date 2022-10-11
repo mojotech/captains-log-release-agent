@@ -28,19 +28,38 @@ sequenceDiagram
     Phoenix Server->>Slack: Blast notification - new webhooked added
 ```
 
-# Create Release
+# Release Life Cycle
 
 ```mermaid
 
 sequenceDiagram
-    participant Slack
-    participant Phoenix Server
-    participant Github
     participant Developer
+    participant Github
+
+
+    participant Phoenix Server
+    participant Slack
+
+    participant Confluence
+
+
     
     
-    Developer->>Github: Create Release
+    Developer->>Github: Create "Draft Release"
     Github->>Phoenix Server: Release Created
-    Phoenix Server->>Slack: Release Created
+
+    Developer->>Github: Release Edited
+    Github->>Phoenix Server: Release Created
+    
+    Developer->>Github: Release Published
+    Github->>Phoenix Server: Release Published
+    Phoenix Server->>Slack: Announce Release Published
+    Phoenix Server->>Confluence: Record Release Published
+
+
+    Developer->>Github: Release Edited
+    Github->>Phoenix Server: Release Created
+    Phoenix Server->>Slack: Announce Release Edited
+    Phoenix Server->>Confluence: Update Release
 
 ```
