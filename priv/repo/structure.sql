@@ -335,9 +335,9 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 CREATE TABLE public.webhook_events (
     id bigint NOT NULL,
     repository_id bigint NOT NULL,
-    raw_payload character varying(255) NOT NULL,
     inserted_at timestamp(0) without time zone NOT NULL,
-    updated_at timestamp(0) without time zone NOT NULL
+    updated_at timestamp(0) without time zone NOT NULL,
+    raw_payload jsonb NOT NULL
 );
 
 
@@ -621,3 +621,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20220825175641);
 INSERT INTO public."schema_migrations" (version) VALUES (20220902190835);
 INSERT INTO public."schema_migrations" (version) VALUES (20220902192328);
 INSERT INTO public."schema_migrations" (version) VALUES (20220922202207);
+INSERT INTO public."schema_migrations" (version) VALUES (20221011131109);

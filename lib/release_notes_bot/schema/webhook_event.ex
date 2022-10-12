@@ -9,7 +9,7 @@ defmodule ReleaseNotesBot.Schema.WebhookEvent do
   import Ecto.Changeset
 
   schema "webhook_events" do
-    field(:raw_payload, :string)
+    field(:raw_payload, :map)
     belongs_to(:repository, ReleaseNotesBot.Schema.Repository)
 
     timestamps()
