@@ -57,7 +57,8 @@ defmodule ReleaseNotesBot.Persists do
   def persist(
         title,
         release,
-        project_provider
+        project_provider,
+        action
       ) do
     sanitizer =
       parse_params(
@@ -68,15 +69,60 @@ defmodule ReleaseNotesBot.Persists do
       )
 
     if sanitizer.valid? do
-      case select_provider_to_persist(project_provider.persistence_provider_id, sanitizer.changes) do
+      case choose_action(sanitizer.changes, action, project_provider.persistence_provider_id) do
         {:ok, endpoint} ->
           {:ok, endpoint}
 
-        {:error, message} ->
-          {:error, message}
+        {:error, err} ->
+          {:error, err}
       end
     else
       {:error, "Invalid params.. Could not sanitize.."}
+    end
+  end
+
+  defp choose_action(sanitizer_changes, action, persistence_provider_id) do
+    case action do
+      "published" ->
+        case create(persistence_provider_id, sanitizer_changes) do
+          {:ok, res} ->
+            {:ok, res}
+
+          {:error, err} ->
+            {:error, err}
+        end
+
+      "edited" ->
+        case update(persistence_provider_id, sanitizer_changes) do
+          {:ok, res} ->
+            {:ok, res}
+
+          {:error, err} ->
+            {:error, err}
+        end
+
+      _ ->
+        {:error, "Invalid action"}
+    end
+  end
+
+  defp create(persistence_provider_id, sanitizer_changes) do
+    case select_provider_to_persist(persistence_provider_id, sanitizer_changes) do
+      {:ok, endpoint} ->
+        {:ok, endpoint}
+
+      {:error, message} ->
+        {:error, message}
+    end
+  end
+
+  defp update(persistence_provider_id, sanitizer_changes) do
+    case select_provider_to_update(persistence_provider_id, sanitizer_changes) do
+      {:ok, endpoint} ->
+        {:ok, endpoint}
+
+      {:error, message} ->
+        {:error, message}
     end
   end
 
@@ -90,6 +136,23 @@ defmodule ReleaseNotesBot.Persists do
 
           {:error, _} ->
             {:error, "Error persisting"}
+        end
+
+      _ ->
+        {:error, "Invalid persistence provider"}
+    end
+  end
+
+  def select_provider_to_update(persistence_provider_id, sanitizer_changes) do
+    case persistence_provider_id do
+      # Confluence
+      1 ->
+        case update_confluence_page(sanitizer_changes) do
+          {:ok, endpoint} ->
+            {:ok, endpoint}
+
+          {:error, _} ->
+            {:error, "Error updating"}
         end
 
       _ ->
@@ -128,6 +191,10 @@ defmodule ReleaseNotesBot.Persists do
       {:error, _reason} ->
         {:error, 500}
     end
+  end
+
+  defp update_confluence_page() do
+    {:error, "Not implemented"}
   end
 
   # https://developer.atlassian.com/server/confluence/confluence-rest-api-examples/#create-a-new-page
