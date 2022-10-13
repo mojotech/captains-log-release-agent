@@ -98,6 +98,18 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     end
   end
 
+  defp process_release(
+         body = %{"action" => "created"},
+         project_id
+       ) do
+    project = Projects.get_provider(id: project_id)
+
+    Channels.post_message_all_client_channels(
+      Clients.get_channels(project.client_id),
+      build_message(body, nil)
+    )
+  end
+
   defp process_release(_body, _project_id), do: nil
 
   defp replace_bullets(body), do: String.replace("\n" <> body, ["\n* ", "\n- "], "\n• ")
@@ -115,6 +127,9 @@ defmodule ReleaseNotesBotWeb.WebhookController do
 
       "published" when is_binary(persistence) ->
         "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} '#{release["name"]}' on tag: '#{release["tag_name"]}'\n\nDetails:\n#{replace_bullets(release["body"])}\n\n#{build_slack_url_embed(persistence, @view_on_persistence_message)}"
+
+      "created" when is_nil(persistence) ->
+        "#{release["author"]["login"]} has #{action} a draft release on tag: '#{release["tag_name"]}'. #{build_slack_url_embed(release["html_url"], "Click here")} to view on Github."
 
       _ ->
         "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} '#{release["name"]}' on tag: '#{release["tag_name"]}'\n\nDetails:\n#{replace_bullets(release["body"])}"
