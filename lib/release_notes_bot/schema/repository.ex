@@ -15,6 +15,7 @@ defmodule ReleaseNotesBot.Schema.Repository do
     field(:url, :string)
 
     belongs_to(:project, ReleaseNotesBot.Schema.Project)
+    has_many(:webhook_events, ReleaseNotesBot.Schema.WebhookEvent)
 
     timestamps()
   end
