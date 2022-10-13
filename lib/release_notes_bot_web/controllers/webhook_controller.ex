@@ -3,7 +3,16 @@ defmodule ReleaseNotesBotWeb.WebhookController do
   This module is used for consuming webhook events.
   """
   use ReleaseNotesBotWeb, :controller
-  alias ReleaseNotesBot.{Projects, WebhookEvents, Repositories, Clients, Channels, Persists}
+
+  alias ReleaseNotesBot.{
+    Projects,
+    WebhookEvents,
+    Repositories,
+    Clients,
+    Channels,
+    Persists,
+    ReleaseTags
+  }
 
   @release_actions ["published", "deleted"]
   @persist_actions ["published"]
@@ -17,10 +26,22 @@ defmodule ReleaseNotesBotWeb.WebhookController do
         Task.async(fn -> process_event(body) end)
 
       _ ->
-        Task.async(fn -> process_release(body) end)
+        Task.async(fn -> start_process_release(body) end)
     end
 
     conn |> Plug.Conn.send_resp(201, [])
+  end
+
+  defp start_process_release(body) do
+    case repo_match = Repositories.get(observed_id: Integer.to_string(body["repository"]["id"])) do
+      # Check if incoming repo url/id exists as a repo entry and has a project relation
+      %{project_id: project_id} when project_id != nil ->
+        WebhookEvents.create_async(body, repo_match.id)
+        process_release(body, project_id)
+
+      _ ->
+        nil
+    end
   end
 
   defp process_event(body) do
@@ -41,30 +62,32 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     end
   end
 
-  defp process_release(body = %{"repository" => repo, "action" => action})
+  defp process_release(body = %{"action" => action}, project_id)
        when action in @release_actions do
-    case repo_match = Repositories.get(observed_id: Integer.to_string(repo["id"])) do
-      # Check if incoming repo url/id exists as a repo entry and has a project relation
-      %{project_id: project_id} when project_id != nil ->
-        WebhookEvents.create_async(body, repo_match.id)
+    # TO DO: We can request what the settings are for each event then handle them accordingly
+    # TO DO: Simplify repo -> project -> client -> channel relation
+    project = Projects.get_provider(id: project_id)
+    persistence_location = determine_persistence(body, project.project_provider)
 
-        # TO DO: We can request what the settings are for each event then handle them accordingly
-        # TO DO: Simplify repo -> project -> client -> channel relation
-        project = Projects.get_provider(id: project_id)
-        persistence_location = determine_persistence(body, project.project_provider)
-
-        # Build message and push a slack message to all channels
-        Channels.post_message_all_client_channels(
-          Clients.get_channels(project.client_id),
-          build_message(body, persistence_location)
-        )
-
-      _ ->
-        nil
-    end
+    # Build message and push a slack message to all channels
+    Channels.post_message_all_client_channels(
+      Clients.get_channels(project.client_id),
+      build_message(body, persistence_location)
+    )
   end
 
-  defp process_release(_), do: nil
+  # Make sure the release has changes to the body
+  defp process_release(
+         _body = %{"action" => "edited", "changes" => _changes, "release" => release},
+         _project_id
+       ) do
+    nil
+    # TO DO: Has this edit been published?
+    # TO DO: Post to Slack that event has been edited
+    # TO DO: Edit Event on Confluence
+  end
+
+  defp process_release(_body, _project_id), do: nil
 
   defp replace_bullets(body), do: String.replace("\n" <> body, ["\n* ", "\n- "], "\n• ")
 
