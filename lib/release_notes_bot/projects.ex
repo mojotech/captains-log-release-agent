@@ -122,11 +122,6 @@ defmodule ReleaseNotesBot.Projects do
 
         # Persist the note
         endpoint = determine_persisted(details, proj.project_provider)
-        # Persists.persist(
-        #   details.title,
-        #   details.message,
-        #   Enum.take(proj.project_provider, 1) |> List.first()
-        # )
 
         details =
           Map.put_new(
@@ -156,7 +151,8 @@ defmodule ReleaseNotesBot.Projects do
     case Persists.persist(
            details.title,
            details.message,
-           Enum.take(project_provider, 1) |> List.first()
+           Enum.take(project_provider, 1) |> List.first(),
+           "published"
          ) do
       {:ok, endpoint} ->
         endpoint
