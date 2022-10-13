@@ -78,13 +78,24 @@ defmodule ReleaseNotesBotWeb.WebhookController do
 
   # Make sure the release has changes to the body
   defp process_release(
-         _body = %{"action" => "edited", "changes" => _changes, "release" => release},
+         _body = %{
+           "action" => "edited",
+           "changes" => _changes,
+           "release" => release,
+           "repository" => repo
+         },
          _project_id
        ) do
-    nil
-    # TO DO: Has this edit been published?
-    # TO DO: Post to Slack that event has been edited
-    # TO DO: Edit Event on Confluence
+    # Has this release tag been published?
+    case ReleaseTags.is_published(repo["id"], release["id"]) do
+      true ->
+        # TO DO: Post to Slack that event has been edited
+        # TO DO: Edit Event on Confluence
+        nil
+
+      false ->
+        nil
+    end
   end
 
   defp process_release(_body, _project_id), do: nil
