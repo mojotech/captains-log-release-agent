@@ -19,7 +19,7 @@ defmodule ReleaseNotesBot.WebhookEvents do
     Repo.get_by(WebhookEvent, param)
   end
 
-  def create_async(repo_id, payload) do
+  def create_async(payload, repo_id) do
     Task.async(fn ->
       create(%{:raw_payload => payload, :repository_id => repo_id})
     end)
