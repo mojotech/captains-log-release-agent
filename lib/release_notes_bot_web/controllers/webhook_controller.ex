@@ -14,8 +14,6 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     ReleaseTags
   }
 
-  @release_actions ["published"]
-  @persist_actions ["published"]
   @view_on_persistence_message "View on Confluence"
 
   def post(conn, params) do
@@ -62,8 +60,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     end
   end
 
-  defp process_release(body = %{"action" => action}, project_id)
-       when action in @release_actions do
+  defp process_release(body = %{"action" => "published"}, project_id) do
     # TO DO: We can request what the settings are for each event then handle them accordingly
     # TO DO: Simplify repo -> project -> client -> channel relation
     project = Projects.get_provider(id: project_id)
@@ -78,19 +75,27 @@ defmodule ReleaseNotesBotWeb.WebhookController do
 
   # Make sure the release has changes to the body
   defp process_release(
-         _body = %{
+         body = %{
            "action" => "edited",
            "changes" => _changes,
            "release" => release,
            "repository" => repo
          },
-         _project_id
+         project_id
        ) do
     # Has this release tag been published?
     case ReleaseTags.is_published(repo["id"], release["id"]) do
       true ->
-        # TO DO: Post to Slack that event has been edited
         # TO DO: Edit Event on Confluence
+        project = Projects.get_provider(id: project_id)
+        persistence_location = determine_persistence(body, project.project_provider)
+
+        # TO DO: Post to Slack that event has been edited
+        # If we want to diff strings, we can use the myers diff algorithm
+        # Channels.post_message_all_client_channels(
+        #   Clients.get_channels(project.client_id),
+        #   build_message(body, persistence_location)
+        # )
         nil
 
       false ->
@@ -137,21 +142,18 @@ defmodule ReleaseNotesBotWeb.WebhookController do
   end
 
   defp determine_persistence(%{"release" => release, "action" => action}, project_provider) do
-    # Persist to all persistence providers
-    if action in @persist_actions do
-      case Persists.persist(
-             build_persistence_title(release),
-             release["body"],
-             Enum.take(project_provider, 1) |> List.first()
-           ) do
-        {:ok, endpoint} when is_binary(endpoint) ->
-          endpoint
+    # TO DO: Persist to all persistence providers
+    case Persists.persist(
+           build_persistence_title(release),
+           release["body"],
+           Enum.take(project_provider, 1) |> List.first(),
+           action
+         ) do
+      {:ok, endpoint} when is_binary(endpoint) ->
+        endpoint
 
-        _ ->
-          nil
-      end
-    else
-      nil
+      _ ->
+        nil
     end
   end
 
