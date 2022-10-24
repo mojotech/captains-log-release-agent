@@ -14,7 +14,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     ReleaseTags
   }
 
-  @release_actions ["published", "deleted"]
+  @release_actions ["published"]
   @persist_actions ["published"]
   @view_on_persistence_message "View on Confluence"
 
