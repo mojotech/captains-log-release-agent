@@ -155,7 +155,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     end
   end
 
-  defp build_persistence_title(release), do: release["name"]
+  defp build_persistence_title(release), do: release["tag_name"]
 
   defp build_slack_url_embed(url, text), do: "<#{url}|#{text}>"
 end
