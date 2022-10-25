@@ -130,7 +130,7 @@ defmodule ReleaseNotesBot.Persists do
     case persistence_provider_id do
       # Confluence
       1 ->
-        case persist_confluence(sanitizer_changes) do
+        case persist_confluence_page(sanitizer_changes) do
           {:ok, endpoint} ->
             {:ok, endpoint}
 
@@ -160,7 +160,7 @@ defmodule ReleaseNotesBot.Persists do
     end
   end
 
-  def persist_confluence(data) do
+  defp persist_confluence_page(data) do
     headers = get_headers(data.token)
 
     body =
@@ -183,7 +183,8 @@ defmodule ReleaseNotesBot.Persists do
          ) do
       {:ok, response} ->
         payload = Jason.decode!(response.body)
-
+        # TO DO: Post Labels to Confluence Page - labels should be the project name
+        # https://stackoverflow.com/questions/39013589/how-to-add-labels-to-confluence-page-via-rest
         {:ok,
          data.endpoint_source <>
            "#{payload["id"]}/#{data.title |> replace_spaces_with_plus_signs |> drop_question_mark}"}
@@ -191,6 +192,15 @@ defmodule ReleaseNotesBot.Persists do
       {:error, _reason} ->
         {:error, 500}
     end
+  end
+
+  defp update_confluence_page(data) do
+    headers = get_headers(data.token)
+    {:error, "Not implemented"}
+    # curl -u admin:admin -X PUT -H 'Content-Type: application/json' -d '{"id":"3604482","type":"page",
+    # "title":"new page","space":{"key":"TST"},"body":{"storage":{"value":
+    # "<p>This is the updated text for the new page</p>","representation":"storage"}},
+    # "version":{"number":2}}' http://localhost:8080/confluence/rest/api/content/3604482
   end
 
   # https://developer.atlassian.com/server/confluence/confluence-rest-api-examples/#create-a-new-page
@@ -226,14 +236,5 @@ defmodule ReleaseNotesBot.Persists do
       {"Content-Type", "application/json"},
       {"Authorization", "Basic #{token}"}
     ]
-  end
-
-  defp update_confluence_page(data) do
-    headers = get_headers(data.token)
-    {:error, "Not implemented"}
-    # curl -u admin:admin -X PUT -H 'Content-Type: application/json' -d '{"id":"3604482","type":"page",
-    # "title":"new page","space":{"key":"TST"},"body":{"storage":{"value":
-    # "<p>This is the updated text for the new page</p>","representation":"storage"}},
-    # "version":{"number":2}}' http://localhost:8080/confluence/rest/api/content/3604482
   end
 end
