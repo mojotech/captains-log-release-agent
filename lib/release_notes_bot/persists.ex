@@ -161,7 +161,7 @@ defmodule ReleaseNotesBot.Persists do
   end
 
   def persist_confluence(data) do
-    headers = [{"Content-Type", "application/json"}, {"Authorization", "Basic #{data.token}"}]
+    headers = get_headers(data.token)
 
     body =
       create_confluence_body(
@@ -221,7 +221,15 @@ defmodule ReleaseNotesBot.Persists do
 
   defp drop_question_mark(string), do: String.replace(string, "?", "")
 
-  defp update_confluence_page() do
+  defp get_headers(token) do
+    [
+      {"Content-Type", "application/json"},
+      {"Authorization", "Basic #{token}"}
+    ]
+  end
+
+  defp update_confluence_page(data) do
+    headers = get_headers(data.token)
     {:error, "Not implemented"}
     # curl -u admin:admin -X PUT -H 'Content-Type: application/json' -d '{"id":"3604482","type":"page",
     # "title":"new page","space":{"key":"TST"},"body":{"storage":{"value":
