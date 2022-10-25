@@ -130,7 +130,7 @@ defmodule ReleaseNotesBot.Persists do
     case persistence_provider_id do
       # Confluence
       1 ->
-        case persist_confluence(sanitizer_changes) do
+        case persist_confluence_page(sanitizer_changes) do
           {:ok, endpoint} ->
             {:ok, endpoint}
 
@@ -160,7 +160,7 @@ defmodule ReleaseNotesBot.Persists do
     end
   end
 
-  def persist_confluence(data) do
+  def persist_confluence_page(data) do
     headers = get_headers(%{"token" => data.token})
 
     body =
@@ -183,7 +183,8 @@ defmodule ReleaseNotesBot.Persists do
          ) do
       {:ok, response} ->
         payload = Jason.decode!(response.body)
-
+        # TO DO: Post Labels to Confluence Page - labels should be the project name
+        # https://stackoverflow.com/questions/39013589/how-to-add-labels-to-confluence-page-via-rest
         {:ok,
          data.endpoint_source <>
            "#{payload["id"]}/#{data.title |> replace_spaces_with_plus_signs |> drop_question_mark}"}
