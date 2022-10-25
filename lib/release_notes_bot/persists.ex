@@ -161,7 +161,7 @@ defmodule ReleaseNotesBot.Persists do
   end
 
   def persist_confluence(data) do
-    headers = [{"Content-Type", "application/json"}, {"Authorization", "Basic #{data.token}"}]
+    headers = get_headers(%{"token" => data.token})
 
     body =
       create_confluence_body(
@@ -193,7 +193,8 @@ defmodule ReleaseNotesBot.Persists do
     end
   end
 
-  defp update_confluence_page() do
+  defp update_confluence_page(data) do
+    headers = get_headers(%{"token" => data.token})
     {:error, "Not implemented"}
   end
 
@@ -224,4 +225,11 @@ defmodule ReleaseNotesBot.Persists do
   defp replace_spaces_with_plus_signs(string), do: String.replace(string, " ", "+")
 
   defp drop_question_mark(string), do: String.replace(string, "?", "")
+
+  defp get_headers(%{"token" => token}) do
+    [
+      {"Content-Type", "application/json"},
+      {"Authorization", "Basic #{token}"}
+    ]
+  end
 end
