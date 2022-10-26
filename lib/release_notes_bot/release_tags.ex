@@ -9,26 +9,24 @@ defmodule ReleaseNotesBot.ReleaseTags do
 
   @spec is_published(Integer.t(), String.t()) :: boolean()
   def is_published(repo_id, release_tag_id) do
-    case check_for_published_events(repo_id) do
-      [matching_repo_id] ->
-        case matching_repo_id do
-          ^release_tag_id ->
-            true
-
-          _ ->
-            false
-        end
-
-      [] ->
-        false
-    end
+    repo_id
+    |> get_published_events()
+    |> Enum.member?(release_tag_id)
   end
 
-  defp check_for_published_events(repo_id) do
-    Repo.all(
-      from we in WebhookEvent,
-        where: we.repository_id == ^repo_id and fragment("raw_payload->>'action' = 'released'"),
-        select: fragment("raw_payload->'release'->>'id'")
-    )
+  defp get_published_events(repo_id) do
+    repo_id
+    |> compose_published_events_query()
+    |> select_release_id()
+    |> Repo.all()
+  end
+
+  defp compose_published_events_query(repo_id) do
+    from we in WebhookEvent,
+      where: we.repository_id == ^repo_id and fragment("raw_payload->>'action' = 'published'")
+  end
+
+  defp select_release_id(query) do
+    from q in query, select: fragment("raw_payload->'release'->>'id'")
   end
 end
