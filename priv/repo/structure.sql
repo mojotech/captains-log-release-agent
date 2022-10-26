@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 14.2 (Debian 14.2-1.pgdg110+1)
--- Dumped by pg_dump version 14.5 (Debian 14.5-1.pgdg110+1)
+-- Dumped by pg_dump version 14.5 (Debian 14.5-2.pgdg110+2)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -329,6 +329,40 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
+-- Name: webhook_event_persistences; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.webhook_event_persistences (
+    id bigint NOT NULL,
+    webhook_event_id bigint NOT NULL,
+    persistence_provider_id bigint NOT NULL,
+    slug character varying(255) NOT NULL,
+    version integer,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: webhook_event_persistences_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.webhook_event_persistences_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: webhook_event_persistences_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.webhook_event_persistences_id_seq OWNED BY public.webhook_event_persistences.id;
+
+
+--
 -- Name: webhook_events; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -424,6 +458,13 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 
 
 --
+-- Name: webhook_event_persistences id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.webhook_event_persistences ALTER COLUMN id SET DEFAULT nextval('public.webhook_event_persistences_id_seq'::regclass);
+
+
+--
 -- Name: webhook_events id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -508,6 +549,14 @@ ALTER TABLE ONLY public.tokens
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: webhook_event_persistences webhook_event_persistences_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.webhook_event_persistences
+    ADD CONSTRAINT webhook_event_persistences_pkey PRIMARY KEY (id);
 
 
 --
@@ -599,6 +648,22 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: webhook_event_persistences webhook_event_persistences_persistence_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.webhook_event_persistences
+    ADD CONSTRAINT webhook_event_persistences_persistence_provider_id_fkey FOREIGN KEY (persistence_provider_id) REFERENCES public.persistence_providers(id);
+
+
+--
+-- Name: webhook_event_persistences webhook_event_persistences_webhook_event_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.webhook_event_persistences
+    ADD CONSTRAINT webhook_event_persistences_webhook_event_id_fkey FOREIGN KEY (webhook_event_id) REFERENCES public.webhook_events(id);
+
+
+--
 -- Name: webhook_events webhook_events_repository_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -622,3 +687,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20220902190835);
 INSERT INTO public."schema_migrations" (version) VALUES (20220902192328);
 INSERT INTO public."schema_migrations" (version) VALUES (20220922202207);
 INSERT INTO public."schema_migrations" (version) VALUES (20221011131109);
+INSERT INTO public."schema_migrations" (version) VALUES (20221026164438);
