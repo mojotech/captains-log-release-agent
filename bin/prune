@@ -1,2 +1,2 @@
 #!/bin/bash
-docker ps -a | grep "captains-log-release-agent-app" | grep --invert-match "captains-log-release-agent-app-1" | awk '{print $1}' | xargs docker container rm
+docker ps -a | grep "captains-log-release-agent" | grep --invert-match "captains-log-release-agent-app-1" | grep --invert-match "captains-log-release-agent-db-1" | awk '{print $1}' | xargs docker container rm
