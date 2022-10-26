@@ -1,4 +1,5 @@
 #!/bin/bash
 script/deps
 docker-compose run app mix ecto.setup
-script/prune
+cd "$(dirname "$0")"
+source prune
