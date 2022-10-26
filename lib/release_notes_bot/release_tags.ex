@@ -14,6 +14,26 @@ defmodule ReleaseNotesBot.ReleaseTags do
     |> Enum.member?(release_tag_id)
   end
 
+  @spec get_id(Integer.t(), String.t()) :: Interger.t()
+  def get_id(repo_id, release_tag_id) do
+    result =
+      repo_id
+      |> get_ids_of_published_events()
+      |> Enum.find(fn {_id, tag_id} -> tag_id == release_tag_id end)
+
+    case result do
+      nil -> nil
+      {id, _tag_id} -> id
+    end
+  end
+
+  defp get_ids_of_published_events(repo_id) do
+    repo_id
+    |> compose_published_events_query()
+    |> select_ids()
+    |> Repo.all()
+  end
+
   defp get_published_events(repo_id) do
     repo_id
     |> compose_published_events_query()
@@ -28,5 +48,9 @@ defmodule ReleaseNotesBot.ReleaseTags do
 
   defp select_release_id(query) do
     from q in query, select: fragment("raw_payload->'release'->>'id'")
+  end
+
+  defp select_ids(query) do
+    from q in query, select: {q.id, fragment("raw_payload->'release'->>'id'")}
   end
 end
