@@ -16,4 +16,4 @@ You may use any of the Captain's Log commands anywhere inside of the Mojotech Or
 
 ## [Spin up a Development Instance](/docs/dev-environment-spinup.md)
 
-## [System Architecture](/docs/captainslog-diagram-09092022.png)
+## [System Architecture](/docs/captainslog-diagram.png)
