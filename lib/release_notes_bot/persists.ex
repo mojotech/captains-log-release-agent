@@ -90,50 +90,17 @@ defmodule ReleaseNotesBot.Persists do
   defp choose_action(sanitizer_changes, action, persistence_provider_id, page_info) do
     case action do
       "published" ->
-        case create(persistence_provider_id, sanitizer_changes) do
-          {:ok, endpoint} ->
-            {:ok, endpoint}
-
-          {:error, err} ->
-            {:error, err}
-        end
+        create(persistence_provider_id, sanitizer_changes)
 
       "edited" ->
-        case update(persistence_provider_id, sanitizer_changes, page_info) do
-          {:ok, res} ->
-            {:ok, res}
-
-          {:error, err} ->
-            {:error, err}
-        end
+        update(persistence_provider_id, sanitizer_changes, page_info)
 
       _ ->
         {:error, "Invalid action"}
     end
   end
 
-  defp create(persistence_provider_id, sanitizer_changes) do
-    case select_provider_to_persist(persistence_provider_id, sanitizer_changes) do
-      {:ok, endpoint} ->
-        {:ok, endpoint}
-
-      {:error, message} ->
-        {:error, message}
-    end
-  end
-
-  defp update(persistence_provider_id, sanitizer_changes, page_info)
-       when is_binary(page_info.slug) do
-    case select_provider_to_update(persistence_provider_id, sanitizer_changes, page_info) do
-      {:ok, endpoint} ->
-        {:ok, endpoint}
-
-      {:error, message} ->
-        {:error, message}
-    end
-  end
-
-  def select_provider_to_persist(persistence_provider_id, sanitizer_changes) do
+  def create(persistence_provider_id, sanitizer_changes) do
     case persistence_provider_id do
       # Confluence
       1 ->
@@ -150,7 +117,8 @@ defmodule ReleaseNotesBot.Persists do
     end
   end
 
-  def select_provider_to_update(persistence_provider_id, sanitizer_changes, page_info) do
+  def update(persistence_provider_id, sanitizer_changes, page_info)
+      when is_binary(page_info.slug) do
     case persistence_provider_id do
       # Confluence
       1 ->
