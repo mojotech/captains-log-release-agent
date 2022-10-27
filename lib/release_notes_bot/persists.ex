@@ -95,6 +95,9 @@ defmodule ReleaseNotesBot.Persists do
       "edited" ->
         update(persistence_provider_id, sanitizer_changes, page_info)
 
+      "deleted" ->
+        delete(persistence_provider_id, sanitizer_changes, page_info)
+
       _ ->
         {:error, "Invalid action"}
     end
@@ -123,6 +126,24 @@ defmodule ReleaseNotesBot.Persists do
       # Confluence
       1 ->
         case update_confluence_page(sanitizer_changes, page_info) do
+          {:ok, endpoint} ->
+            {:ok, endpoint}
+
+          {:error, reason} ->
+            {:error, reason}
+        end
+
+      _ ->
+        {:error, "Invalid persistence provider"}
+    end
+  end
+
+  defp delete(persistence_provider_id, sanitizer_changes, page_info)
+       when is_binary(page_info.slug) do
+    case persistence_provider_id do
+      # Confluence
+      1 ->
+        case delete_confluence_page(sanitizer_changes, page_info) do
           {:ok, endpoint} ->
             {:ok, endpoint}
 
@@ -201,6 +222,25 @@ defmodule ReleaseNotesBot.Persists do
 
       {:error, _reason} ->
         {:error, "Finch request to update has failed"}
+    end
+  end
+
+  defp delete_confluence_page(data, page_info) do
+    headers = get_headers(data.token)
+
+    case Finch.request(
+           Finch.build(
+             :delete,
+             data.endpoint_persistence <> "/#{page_info.slug}",
+             headers
+           ),
+           ReleaseNotesBot.Finch
+         ) do
+      {:ok, _response} ->
+        {:ok, "Page deleted"}
+
+      {:error, _reason} ->
+        {:error, "Finch request to delete has failed"}
     end
   end
 

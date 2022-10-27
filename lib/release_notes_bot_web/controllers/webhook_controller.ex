@@ -74,6 +74,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     persistence_location = determine_persistence(body, project.project_provider)
     project_provider = project.project_provider |> Enum.take(1) |> List.first()
 
+    # TO DO: Handle case where persistence fails (slug = nil)
     WebhookEventPersistences.create(%{
       :slug => persistence_location |> String.split("/") |> Enum.take(-2) |> List.first(),
       :webhook_event_id => ReleaseTags.get_id(repo_id, Integer.to_string(release["id"])),
@@ -142,6 +143,50 @@ defmodule ReleaseNotesBotWeb.WebhookController do
       Clients.get_channels(project.client_id),
       build_message(body, nil)
     )
+  end
+
+  defp process_release(
+         body = %{"action" => "deleted", "release" => release},
+         project_id,
+         repo_id
+       ) do
+    case ReleaseTags.is_published(repo_id, Integer.to_string(release["id"])) do
+      true ->
+        project = Projects.get_provider(id: project_id)
+        project_provider = project.project_provider |> Enum.take(1) |> List.first()
+        webhook_event_id = ReleaseTags.get_id(repo_id, Integer.to_string(release["id"]))
+
+        persistence_record =
+          ReleaseNotesBot.WebhookEventPersistences.get(%{
+            :webhook_event_id => webhook_event_id,
+            :persistence_provider_id => project_provider.persistence_provider_id
+          })
+
+        case persistence_record do
+          %WebhookEventPersistence{:slug => slug} when is_binary(slug) ->
+            # Delete the page on the persistence provider
+            determine_persistence(body, project.project_provider, %{
+              :slug => slug
+            })
+
+            # Remove the slug since its been deleted
+            WebhookEventPersistences.update(persistence_record, %{:slug => nil})
+
+          _ ->
+            nil
+        end
+
+        Channels.post_message_all_client_channels(
+          Clients.get_channels(project.client_id),
+          build_message(body, nil)
+        )
+
+        # Set the event to unpublished
+        %{:id => webhook_event_id} |> WebhookEvents.get() |> WebhookEvents.unpublish()
+
+      false ->
+        nil
+    end
   end
 
   defp process_release(_body, _project_id, _repo_id), do: nil
