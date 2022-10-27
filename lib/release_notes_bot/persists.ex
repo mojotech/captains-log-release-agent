@@ -58,7 +58,8 @@ defmodule ReleaseNotesBot.Persists do
         title,
         release,
         project_provider,
-        action
+        action,
+        page_info \\ nil
       ) do
     sanitizer =
       parse_params(
@@ -69,7 +70,12 @@ defmodule ReleaseNotesBot.Persists do
       )
 
     if sanitizer.valid? do
-      case choose_action(sanitizer.changes, action, project_provider.persistence_provider_id) do
+      case choose_action(
+             sanitizer.changes,
+             action,
+             project_provider.persistence_provider_id,
+             page_info
+           ) do
         {:ok, endpoint} ->
           {:ok, endpoint}
 
@@ -81,19 +87,19 @@ defmodule ReleaseNotesBot.Persists do
     end
   end
 
-  defp choose_action(sanitizer_changes, action, persistence_provider_id) do
+  defp choose_action(sanitizer_changes, action, persistence_provider_id, page_info) do
     case action do
       "published" ->
         case create(persistence_provider_id, sanitizer_changes) do
-          {:ok, res} ->
-            {:ok, res}
+          {:ok, endpoint} ->
+            {:ok, endpoint}
 
           {:error, err} ->
             {:error, err}
         end
 
       "edited" ->
-        case update(persistence_provider_id, sanitizer_changes) do
+        case update(persistence_provider_id, sanitizer_changes, page_info) do
           {:ok, res} ->
             {:ok, res}
 
@@ -116,8 +122,9 @@ defmodule ReleaseNotesBot.Persists do
     end
   end
 
-  defp update(persistence_provider_id, sanitizer_changes) do
-    case select_provider_to_update(persistence_provider_id, sanitizer_changes) do
+  defp update(persistence_provider_id, sanitizer_changes, page_info)
+       when is_binary(page_info.slug) do
+    case select_provider_to_update(persistence_provider_id, sanitizer_changes, page_info) do
       {:ok, endpoint} ->
         {:ok, endpoint}
 
@@ -143,16 +150,16 @@ defmodule ReleaseNotesBot.Persists do
     end
   end
 
-  def select_provider_to_update(persistence_provider_id, sanitizer_changes) do
+  def select_provider_to_update(persistence_provider_id, sanitizer_changes, page_info) do
     case persistence_provider_id do
       # Confluence
       1 ->
-        case update_confluence_page(sanitizer_changes) do
+        case update_confluence_page(sanitizer_changes, page_info) do
           {:ok, endpoint} ->
             {:ok, endpoint}
 
-          {:error, _} ->
-            {:error, "Error updating"}
+          {:error, reason} ->
+            {:error, reason}
         end
 
       _ ->
@@ -194,7 +201,7 @@ defmodule ReleaseNotesBot.Persists do
     end
   end
 
-  defp update_confluence_page(data) do
+  defp update_confluence_page(data, page_info) do
     headers = get_headers(data.token)
     {:error, "Not implemented"}
     # curl -u admin:admin -X PUT -H 'Content-Type: application/json' -d '{"id":"3604482","type":"page",
