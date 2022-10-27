@@ -131,7 +131,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
         "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} the release on tag: #{release["tag_name"]}"
 
       "edited" ->
-        "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} the release on tag: #{release["tag_name"]}\n\nDetails:\n#{replace_bullets(release["body"])}"
+        "#{release["author"]["login"]} has #{action} the published release on tag: #{release["tag_name"]}\n\n#{build_slack_url_embed(persistence, @view_on_persistence_message)}"
 
       "published" when is_binary(persistence) ->
         "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} '#{release["name"]}' on tag: '#{release["tag_name"]}'\n\nDetails:\n#{replace_bullets(release["body"])}\n\n#{build_slack_url_embed(persistence, @view_on_persistence_message)}"
