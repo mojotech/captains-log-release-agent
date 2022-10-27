@@ -154,7 +154,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
       ) do
     case action do
       "deleted" ->
-        "Update for repository: #{repo["full_name"]}\n\n#{release["author"]["login"]} has #{action} the release on tag: #{release["tag_name"]}"
+        "#{release["author"]["login"]} has #{action} the release on tag: #{release["tag_name"]}"
 
       "edited" ->
         "#{release["author"]["login"]} has #{action} the published release on tag: #{release["tag_name"]}\n\n#{build_slack_url_embed(persistence, @view_on_persistence_message)}"
