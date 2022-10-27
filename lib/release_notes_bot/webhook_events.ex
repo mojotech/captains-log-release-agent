@@ -24,4 +24,18 @@ defmodule ReleaseNotesBot.WebhookEvents do
       create(%{:raw_payload => payload, :repository_id => repo_id})
     end)
   end
+
+  def update(webhook_event, params) do
+    webhook_event
+    |> WebhookEvent.changeset(params)
+    |> Repo.update()
+  end
+
+  def unpublish(webhook_event = %{:raw_payload => %{"action" => "published"}}) do
+    update(webhook_event, %{
+      :raw_payload => put_in(webhook_event.raw_payload, ["action"], "unpublished")
+    })
+  end
+
+  def unpublish(_webhook_event), do: nil
 end
