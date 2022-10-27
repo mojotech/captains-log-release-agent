@@ -144,6 +144,45 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     )
   end
 
+  defp process_release(
+         body = %{"action" => "deleted", "release" => release},
+         project_id,
+         repo_id
+       ) do
+    case ReleaseTags.is_published(repo_id, Integer.to_string(release["id"])) do
+      true ->
+        project = Projects.get_provider(id: project_id)
+        project_provider = project.project_provider |> Enum.take(1) |> List.first()
+        webhook_event_id = ReleaseTags.get_id(repo_id, Integer.to_string(release["id"]))
+
+        case persistence_record =
+               ReleaseNotesBot.WebhookEventPersistences.get(%{
+                 :webhook_event_id => webhook_event_id,
+                 :persistence_provider_id => project_provider.persistence_provider_id
+               }) do
+          %WebhookEventPersistence{:slug => slug} when is_binary(slug) ->
+            persistence_location =
+              determine_persistence(body, project.project_provider, %{
+                :slug => slug
+              })
+
+            Channels.post_message_all_client_channels(
+              Clients.get_channels(project.client_id),
+              build_message(body, nil)
+            )
+
+            WebhookEventPersistences.delete(persistence_record)
+            %{:id => webhook_event_id} |> WebhookEvents.get() |> WebhookEvents.delete()
+
+          _ ->
+            nil
+        end
+
+      false ->
+        nil
+    end
+  end
+
   defp process_release(_body, _project_id, _repo_id), do: nil
 
   defp replace_bullets(body), do: String.replace("\n" <> body, ["\n* ", "\n- "], "\n• ")
