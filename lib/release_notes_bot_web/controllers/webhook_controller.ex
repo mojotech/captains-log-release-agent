@@ -35,7 +35,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
       # Check if incoming repo url/id exists as a repo entry and has a project relation
       %{project_id: project_id} when project_id != nil ->
         WebhookEvents.create_async(body, repo_match.id)
-        process_release(body, project_id)
+        process_release(body, project_id, repo_match.id)
 
       _ ->
         nil
@@ -60,7 +60,11 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     end
   end
 
-  defp process_release(body = %{"action" => "published"}, project_id) do
+  defp process_release(
+         body = %{"action" => "published", "release" => release},
+         project_id,
+         repo_id
+       ) do
     # TO DO: We can request what the settings are for each event then handle them accordingly
     # TO DO: Simplify repo -> project -> client -> channel relation
     project = Projects.get_provider(id: project_id)
@@ -73,29 +77,18 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     )
   end
 
-  # Make sure the release has changes to the body
   defp process_release(
          body = %{
            "action" => "edited",
-           "changes" => _changes,
-           "release" => release,
-           "repository" => repo
+           "release" => release
          },
-         project_id
+         project_id,
+         repo_id
        ) do
-    # Has this release tag been published?
-    case ReleaseTags.is_published(repo["id"], release["id"]) do
+    case ReleaseTags.is_published(repo_id, Integer.to_string(release["id"])) do
       true ->
-        # TO DO: Edit Event on Confluence
         project = Projects.get_provider(id: project_id)
-        persistence_location = determine_persistence(body, project.project_provider)
 
-        # TO DO: Post to Slack that event has been edited
-        # If we want to diff strings, we can use the myers diff algorithm
-        # Channels.post_message_all_client_channels(
-        #   Clients.get_channels(project.client_id),
-        #   build_message(body, persistence_location)
-        # )
         nil
 
       false ->
@@ -105,7 +98,8 @@ defmodule ReleaseNotesBotWeb.WebhookController do
 
   defp process_release(
          body = %{"action" => "created"},
-         project_id
+         project_id,
+         _repo_id
        ) do
     project = Projects.get_provider(id: project_id)
 
@@ -115,7 +109,7 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     )
   end
 
-  defp process_release(_body, _project_id), do: nil
+  defp process_release(_body, _project_id, _repo_id), do: nil
 
   defp replace_bullets(body), do: String.replace("\n" <> body, ["\n* ", "\n- "], "\n• ")
 
