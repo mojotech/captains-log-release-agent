@@ -11,7 +11,8 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     Clients,
     Channels,
     Persists,
-    ReleaseTags
+    ReleaseTags,
+    WebhookEventPersistences
   }
 
   @view_on_persistence_message "View on Confluence"
@@ -69,6 +70,14 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     # TO DO: Simplify repo -> project -> client -> channel relation
     project = Projects.get_provider(id: project_id)
     persistence_location = determine_persistence(body, project.project_provider)
+    project_provider = project.project_provider |> Enum.take(1) |> List.first()
+
+    WebhookEventPersistences.create(%{
+      :slug => persistence_location |> String.split("/") |> Enum.take(-2) |> List.first(),
+      :webhook_event_id => ReleaseTags.get_id(repo_id, Integer.to_string(release["id"])),
+      :persistence_provider_id => project_provider.persistence_provider_id,
+      :version => 1
+    })
 
     # Build message and push a slack message to all channels
     Channels.post_message_all_client_channels(
