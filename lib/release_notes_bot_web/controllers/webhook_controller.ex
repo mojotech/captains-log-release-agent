@@ -15,6 +15,8 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     WebhookEventPersistences
   }
 
+  alias ReleaseNotesBot.Schema.WebhookEventPersistence
+
   @view_on_persistence_message "View on Confluence"
 
   def post(conn, params) do
@@ -97,8 +99,32 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     case ReleaseTags.is_published(repo_id, Integer.to_string(release["id"])) do
       true ->
         project = Projects.get_provider(id: project_id)
+        project_provider = project.project_provider |> Enum.take(1) |> List.first()
+        webhook_event_id = ReleaseTags.get_id(repo_id, Integer.to_string(release["id"]))
 
-        nil
+        case persistence_record =
+               ReleaseNotesBot.WebhookEventPersistences.get(%{
+                 :webhook_event_id => webhook_event_id,
+                 :persistence_provider_id => project_provider.persistence_provider_id
+               }) do
+          %WebhookEventPersistence{:slug => slug, :version => version} when is_binary(slug) ->
+            persistence_location =
+              determine_persistence(body, project.project_provider, %{
+                :slug => slug,
+                :version => version
+              })
+
+            # If we want to diff strings, we can use the myers diff algorithm
+            Channels.post_message_all_client_channels(
+              Clients.get_channels(project.client_id),
+              build_message(body, persistence_location)
+            )
+
+            WebhookEventPersistences.update(persistence_record, %{:version => version + 1})
+
+          _ ->
+            nil
+        end
 
       false ->
         nil
@@ -144,13 +170,18 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     end
   end
 
-  defp determine_persistence(%{"release" => release, "action" => action}, project_provider) do
+  defp determine_persistence(
+         %{"release" => release, "action" => action},
+         project_provider,
+         page_info \\ nil
+       ) do
     # TO DO: Persist to all persistence providers
     case Persists.persist(
            build_persistence_title(release),
            release["body"],
            Enum.take(project_provider, 1) |> List.first(),
-           action
+           action,
+           page_info
          ) do
       {:ok, endpoint} when is_binary(endpoint) ->
         endpoint
