@@ -203,15 +203,47 @@ defmodule ReleaseNotesBot.Persists do
 
   defp update_confluence_page(data, page_info) do
     headers = get_headers(data.token)
-    {:error, "Not implemented"}
-    # curl -u admin:admin -X PUT -H 'Content-Type: application/json' -d '{"id":"3604482","type":"page",
-    # "title":"new page","space":{"key":"TST"},"body":{"storage":{"value":
-    # "<p>This is the updated text for the new page</p>","representation":"storage"}},
-    # "version":{"number":2}}' http://localhost:8080/confluence/rest/api/content/3604482
+
+    body =
+      create_confluence_body(
+        data.title,
+        data.space_id,
+        data.space_key,
+        data.parent_id,
+        data.message,
+        page_info.slug,
+        page_info.version
+      )
+
+    case Finch.request(
+           Finch.build(
+             :put,
+             data.endpoint_persistence <> "/#{page_info.slug}",
+             headers,
+             Jason.encode!(body)
+           ),
+           ReleaseNotesBot.Finch
+         ) do
+      {:ok, response} ->
+        payload = Jason.decode!(response.body)
+
+        {:ok,
+         data.endpoint_source <>
+           "#{payload["id"]}/#{data.title |> replace_spaces_with_plus_signs |> drop_question_mark}"}
+
+      {:error, _reason} ->
+        {:error, "Finch request to update has failed"}
+    end
   end
 
   # https://developer.atlassian.com/server/confluence/confluence-rest-api-examples/#create-a-new-page
-  defp create_confluence_body(page_title, space_id, space_key, parent_id, page_text) do
+  defp create_confluence_body(
+         page_title,
+         space_id,
+         space_key,
+         parent_id,
+         page_text
+       ) do
     %{
       title: page_title,
       type: "page",
@@ -230,6 +262,32 @@ defmodule ReleaseNotesBot.Persists do
           value: page_text,
           representation: "storage"
         }
+      }
+    }
+  end
+
+  defp create_confluence_body(
+         page_title,
+         space_id,
+         space_key,
+         _parent_id,
+         page_text,
+         page_id,
+         version
+       ) do
+    %{
+      id: page_id,
+      type: "page",
+      title: page_title,
+      space: %{id: space_id, key: space_key},
+      body: %{
+        storage: %{
+          value: page_text,
+          representation: "storage"
+        }
+      },
+      version: %{
+        number: version + 1
       }
     }
   end
