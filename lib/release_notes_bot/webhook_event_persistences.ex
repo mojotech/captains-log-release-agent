@@ -28,4 +28,8 @@ defmodule ReleaseNotesBot.WebhookEventPersistences do
     |> WebhookEventPersistence.changeset(params)
     |> Repo.update()
   end
+
+  def delete(webhook_event_persistence) do
+    Repo.delete(webhook_event_persistence)
+  end
 end

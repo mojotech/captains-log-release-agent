@@ -24,4 +24,8 @@ defmodule ReleaseNotesBot.WebhookEvents do
       create(%{:raw_payload => payload, :repository_id => repo_id})
     end)
   end
+
+  def delete(webhook_event) do
+    Repo.delete(webhook_event)
+  end
 end
