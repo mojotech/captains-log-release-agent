@@ -161,10 +161,9 @@ defmodule ReleaseNotesBotWeb.WebhookController do
                  :persistence_provider_id => project_provider.persistence_provider_id
                }) do
           %WebhookEventPersistence{:slug => slug} when is_binary(slug) ->
-            persistence_location =
-              determine_persistence(body, project.project_provider, %{
-                :slug => slug
-              })
+            determine_persistence(body, project.project_provider, %{
+              :slug => slug
+            })
 
             Channels.post_message_all_client_channels(
               Clients.get_channels(project.client_id),
