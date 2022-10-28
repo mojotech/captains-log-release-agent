@@ -67,7 +67,7 @@ defmodule ReleaseNotesBot.Projects do
         new_project.id
       )
     else
-      ProjectProviders.create(%{"project_id" => new_project.id})
+      ProjectProviders.create_default(new_project.id)
     end
 
     github_repo_url =
