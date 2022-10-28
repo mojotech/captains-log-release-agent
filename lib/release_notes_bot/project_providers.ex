@@ -11,6 +11,22 @@ defmodule ReleaseNotesBot.ProjectProviders do
     |> Repo.insert()
   end
 
+  def create_default(project_id) do
+    %ProjectProvider{}
+    |> ProjectProvider.changeset(%{
+      project_id: project_id,
+      persistence_provider_id: 1,
+      # TO DO: This should be able to be set by the user in the future
+      config: %{
+        "space_id" => Application.get_env(:release_notes_bot, :confluence_space_id),
+        "space_key" => Application.get_env(:release_notes_bot, :confluence_space_key),
+        "parent_id" => Application.get_env(:release_notes_bot, :confluence_parent_id),
+        "organization" => Application.get_env(:release_notes_bot, :confluence_organization)
+      }
+    })
+    |> Repo.insert()
+  end
+
   def get_all do
     Repo.all(ProjectProvider)
   end
