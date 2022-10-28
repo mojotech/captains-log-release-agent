@@ -49,6 +49,14 @@ defmodule ReleaseNotesBot.Channels do
     |> Repo.preload([:client])
   end
 
+  def post_ephemeral(channel, message, target_user_id) do
+    Slack.Web.Chat.post_ephemeral(
+      channel,
+      message,
+      target_user_id
+    )
+  end
+
   def post_message(channel, message) do
     Slack.Web.Chat.post_message(
       channel,
