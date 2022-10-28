@@ -53,41 +53,50 @@ defmodule ReleaseNotesBotWeb.CaptainsController do
   end
 
   defp check_channel(body) do
-    %ReleaseNotesBot.Schema.Channel{client_id: client_id} =
-      Channels.get_client(slack_id: body["channel_id"])
-
-    case client_id do
+    case Channels.get_client(slack_id: body["channel_id"]) do
       nil ->
-        {:ok, view} =
-          Clients.get_all()
-          |> CaptainsView.gen_client_view(body["channel_name"], body["channel_id"])
-          |> Jason.encode()
+        Task.async(fn ->
+          Channels.post_ephemeral(
+            body["user_id"],
+            "The Captain cannot be initialized in direct messages. Please initialize The Captain in a channel.",
+            body["user_id"]
+          )
+        end)
 
-        Slack.Web.Views.open(
-          Application.get_env(
-            :release_notes_bot,
-            :slack_bot_token
-          ),
-          body["trigger_id"],
-          view
-        )
+      %ReleaseNotesBot.Schema.Channel{client_id: client_id} ->
+        case client_id do
+          nil ->
+            {:ok, view} =
+              Clients.get_all()
+              |> CaptainsView.gen_client_view(body["channel_name"], body["channel_id"])
+              |> Jason.encode()
 
-      _ ->
-        data = ReleaseNotesBot.Clients.get_projects(client_id)
+            Slack.Web.Views.open(
+              Application.get_env(
+                :release_notes_bot,
+                :slack_bot_token
+              ),
+              body["trigger_id"],
+              view
+            )
 
-        {:ok, view} =
-          data.projects
-          |> CaptainsView.gen_release_notes_view()
-          |> Jason.encode()
+          _ ->
+            data = ReleaseNotesBot.Clients.get_projects(client_id)
 
-        Slack.Web.Views.open(
-          Application.get_env(
-            :release_notes_bot,
-            :slack_bot_token
-          ),
-          body["trigger_id"],
-          view
-        )
+            {:ok, view} =
+              data.projects
+              |> CaptainsView.gen_release_notes_view()
+              |> Jason.encode()
+
+            Slack.Web.Views.open(
+              Application.get_env(
+                :release_notes_bot,
+                :slack_bot_token
+              ),
+              body["trigger_id"],
+              view
+            )
+        end
     end
   end
 end
