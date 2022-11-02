@@ -11,6 +11,7 @@ defmodule ReleaseNotesBot.Schema.WebhookEvent do
   schema "webhook_events" do
     field(:raw_payload, :map)
     belongs_to(:repository, ReleaseNotesBot.Schema.Repository)
+    has_many(:webhook_event_persistences, ReleaseNotesBot.Schema.WebhookEventPersistence)
 
     timestamps()
   end
