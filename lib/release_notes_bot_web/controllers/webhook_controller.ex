@@ -74,13 +74,18 @@ defmodule ReleaseNotesBotWeb.WebhookController do
     persistence_location = determine_persistence(body, project.project_provider)
     project_provider = project.project_provider |> Enum.take(1) |> List.first()
 
-    # TO DO: Handle case where persistence fails (slug = nil)
-    WebhookEventPersistences.create(%{
-      :slug => persistence_location |> String.split("/") |> Enum.take(-2) |> List.first(),
-      :webhook_event_id => ReleaseTags.get_id(repo_id, Integer.to_string(release["id"])),
-      :persistence_provider_id => project_provider.persistence_provider_id,
-      :version => 1
-    })
+    case persistence_location do
+      persistence_location when is_binary(persistence_location) ->
+        WebhookEventPersistences.create(%{
+          :slug => persistence_location |> String.split("/") |> Enum.take(-2) |> List.first(),
+          :webhook_event_id => ReleaseTags.get_id(repo_id, Integer.to_string(release["id"])),
+          :persistence_provider_id => project_provider.persistence_provider_id,
+          :version => 1
+        })
+
+      _ ->
+        nil
+    end
 
     # Build message and push a slack message to all channels
     Channels.post_message_all_client_channels(
