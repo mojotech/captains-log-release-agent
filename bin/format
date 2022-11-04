@@ -1,5 +1,3 @@
 #!/bin/bash
-docker-compose run app mix credo -a
-docker-compose run app mix format
-cd "$(dirname "$0")"
-source prune
+docker-compose exec app mix credo -a
+docker-compose exec app mix format

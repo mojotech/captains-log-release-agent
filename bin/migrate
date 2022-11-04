@@ -1,4 +1,2 @@
 #!/bin/bash
-docker-compose run app mix db.migrate
-cd "$(dirname "$0")"
-source prune
+docker-compose exec app mix db.migrate

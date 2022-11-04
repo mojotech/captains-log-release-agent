@@ -1,4 +1,3 @@
 #!/bin/bash
-docker-compose run app mix db.rollback
-cd "$(dirname "$0")"
-source prune
+docker-compose exec app mix db.rollback
+
