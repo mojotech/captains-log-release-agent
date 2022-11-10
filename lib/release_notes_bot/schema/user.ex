@@ -8,7 +8,7 @@ defmodule ReleaseNotesBot.Schema.User do
   schema "users" do
     field(:slack_name, :string)
     field(:slack_id, :string)
-    belongs_to(:project, ReleaseNotesBot.Schema.Project)
+    has_many(:channel_user, ReleaseNotesBot.Schema.ChannelUser)
 
     timestamps()
   end

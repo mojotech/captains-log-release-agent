@@ -6,7 +6,7 @@ defmodule ReleaseNotesBot.Schema.ProjectChannel do
   import Ecto.Changeset
 
   schema "project_channels" do
-    belongs_to(:project_id, ReleaseNotesBot.Schema.Project)
+    belongs_to(:project, ReleaseNotesBot.Schema.Project)
     belongs_to(:channel, ReleaseNotesBot.Schema.Channel)
 
     timestamps()

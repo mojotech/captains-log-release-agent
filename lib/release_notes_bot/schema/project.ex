@@ -12,6 +12,7 @@ defmodule ReleaseNotesBot.Schema.Project do
     belongs_to(:client, ReleaseNotesBot.Schema.Client)
     has_many(:notes, ReleaseNotesBot.Schema.Note)
     has_many(:project_provider, ReleaseNotesBot.Schema.ProjectProvider)
+    has_many(:project_channel, ReleaseNotesBot.Schema.ProjectChannel)
 
     timestamps()
   end
