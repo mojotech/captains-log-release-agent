@@ -1,7 +1,7 @@
 {
-    "key": "my-app",
-    "name": "My app",
-    "description": "My very first app",
+    "key": "mojotech-confluence-bot",
+    "name": "Mojotech Confluence Bot",
+    "description": "Mojotech's Confluence Bot for Software Release Note Automation",
     "baseUrl": "{{localBaseUrl}}",
     "authentication": {
         "type": "jwt"
@@ -12,34 +12,4 @@
     "scopes": [
         "READ",
         "WRITE"
-    ],
-    "apiMigrations":{
-        "signed-install": true
-    },
-    "modules": {
-        "generalPages": [
-            {
-                "key": "hello-world-page-jira",
-                "location": "system.top.navigation.bar",
-                "name": {
-                    "value": "Hello World"
-                },
-                "url": "/hello-world",
-                "conditions": [{
-                    "condition": "user_is_logged_in"
-                }]
-            },
-            {
-                "key": "hello-world-page-confluence",
-                "location": "system.header/left",
-                "name": {
-                    "value": "Hello World"
-                },
-                "url": "/hello-world",
-                "conditions": [{
-                    "condition": "user_is_logged_in"
-                }]
-            }
-        ]
-    }
-}
+    ]}
