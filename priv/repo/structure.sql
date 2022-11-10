@@ -21,13 +21,43 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: channel_users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.channel_users (
+    id bigint NOT NULL,
+    channel_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: channel_users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.channel_users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: channel_users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.channel_users_id_seq OWNED BY public.channel_users.id;
+
+
+--
 -- Name: channels; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.channels (
     id bigint NOT NULL,
-    project_id bigint,
-    client_id bigint,
     name character varying(255) NOT NULL,
     slack_id character varying(255) NOT NULL,
     inserted_at timestamp(0) without time zone NOT NULL,
@@ -52,6 +82,38 @@ CREATE SEQUENCE public.channels_id_seq
 --
 
 ALTER SEQUENCE public.channels_id_seq OWNED BY public.channels.id;
+
+
+--
+-- Name: client_channels; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.client_channels (
+    id bigint NOT NULL,
+    client_id bigint NOT NULL,
+    channel_id bigint NOT NULL,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: client_channels_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.client_channels_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: client_channels_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.client_channels_id_seq OWNED BY public.client_channels.id;
 
 
 --
@@ -148,6 +210,38 @@ CREATE SEQUENCE public.persistence_providers_id_seq
 --
 
 ALTER SEQUENCE public.persistence_providers_id_seq OWNED BY public.persistence_providers.id;
+
+
+--
+-- Name: project_channels; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.project_channels (
+    id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    channel_id bigint NOT NULL,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: project_channels_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.project_channels_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: project_channels_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.project_channels_id_seq OWNED BY public.project_channels.id;
 
 
 --
@@ -395,10 +489,24 @@ ALTER SEQUENCE public.webhook_events_id_seq OWNED BY public.webhook_events.id;
 
 
 --
+-- Name: channel_users id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.channel_users ALTER COLUMN id SET DEFAULT nextval('public.channel_users_id_seq'::regclass);
+
+
+--
 -- Name: channels id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.channels ALTER COLUMN id SET DEFAULT nextval('public.channels_id_seq'::regclass);
+
+
+--
+-- Name: client_channels id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.client_channels ALTER COLUMN id SET DEFAULT nextval('public.client_channels_id_seq'::regclass);
 
 
 --
@@ -420,6 +528,13 @@ ALTER TABLE ONLY public.notes ALTER COLUMN id SET DEFAULT nextval('public.notes_
 --
 
 ALTER TABLE ONLY public.persistence_providers ALTER COLUMN id SET DEFAULT nextval('public.persistence_providers_id_seq'::regclass);
+
+
+--
+-- Name: project_channels id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_channels ALTER COLUMN id SET DEFAULT nextval('public.project_channels_id_seq'::regclass);
 
 
 --
@@ -472,11 +587,27 @@ ALTER TABLE ONLY public.webhook_events ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- Name: channel_users channel_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.channel_users
+    ADD CONSTRAINT channel_users_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: channels channels_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.channels
     ADD CONSTRAINT channels_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: client_channels client_channels_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.client_channels
+    ADD CONSTRAINT client_channels_pkey PRIMARY KEY (id);
 
 
 --
@@ -501,6 +632,14 @@ ALTER TABLE ONLY public.notes
 
 ALTER TABLE ONLY public.persistence_providers
     ADD CONSTRAINT persistence_providers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: project_channels project_channels_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_channels
+    ADD CONSTRAINT project_channels_pkey PRIMARY KEY (id);
 
 
 --
@@ -568,19 +707,35 @@ ALTER TABLE ONLY public.webhook_events
 
 
 --
--- Name: channels channels_client_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: channel_users channel_users_channel_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.channels
-    ADD CONSTRAINT channels_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.clients(id);
+ALTER TABLE ONLY public.channel_users
+    ADD CONSTRAINT channel_users_channel_id_fkey FOREIGN KEY (channel_id) REFERENCES public.channels(id);
 
 
 --
--- Name: channels channels_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: channel_users channel_users_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.channels
-    ADD CONSTRAINT channels_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id);
+ALTER TABLE ONLY public.channel_users
+    ADD CONSTRAINT channel_users_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: client_channels client_channels_channel_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.client_channels
+    ADD CONSTRAINT client_channels_channel_id_fkey FOREIGN KEY (channel_id) REFERENCES public.channels(id);
+
+
+--
+-- Name: client_channels client_channels_client_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.client_channels
+    ADD CONSTRAINT client_channels_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.clients(id);
 
 
 --
@@ -589,6 +744,22 @@ ALTER TABLE ONLY public.channels
 
 ALTER TABLE ONLY public.notes
     ADD CONSTRAINT notes_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id);
+
+
+--
+-- Name: project_channels project_channels_channel_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_channels
+    ADD CONSTRAINT project_channels_channel_id_fkey FOREIGN KEY (channel_id) REFERENCES public.channels(id);
+
+
+--
+-- Name: project_channels project_channels_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_channels
+    ADD CONSTRAINT project_channels_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id);
 
 
 --
@@ -688,3 +859,5 @@ INSERT INTO public."schema_migrations" (version) VALUES (20220902192328);
 INSERT INTO public."schema_migrations" (version) VALUES (20220922202207);
 INSERT INTO public."schema_migrations" (version) VALUES (20221011131109);
 INSERT INTO public."schema_migrations" (version) VALUES (20221026164438);
+INSERT INTO public."schema_migrations" (version) VALUES (20221110192947);
+INSERT INTO public."schema_migrations" (version) VALUES (20221110193236);
