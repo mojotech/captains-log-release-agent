@@ -5,7 +5,7 @@ defmodule ReleaseNotesBot.Projects do
   A Project can have 0 or many Notes.
   """
   alias ReleaseNotesBot.Repo
-  alias ReleaseNotesBot.Schema.Project
+  alias ReleaseNotesBot.Schema.{Project, Channel}
 
   alias ReleaseNotesBot.{
     Clients,
@@ -14,7 +14,8 @@ defmodule ReleaseNotesBot.Projects do
     Note,
     Persists,
     ProjectProviders,
-    PersistenceProviders
+    PersistenceProviders,
+    ProjectChannels
   }
 
   def create(params) do
@@ -39,10 +40,18 @@ defmodule ReleaseNotesBot.Projects do
     |> Repo.preload([:project_provider])
   end
 
+  def get_channels(param) do
+    Project
+    |> Repo.get_by(param)
+    |> Repo.preload([:project_channels])
+  end
+
+  # All modal submissions pass through this function
   def parse_response(view) do
     parse_inner_response(view["state"]["values"])
   end
 
+  # Handles modal submission for creating a new project
   defp parse_inner_response(%{
          "client-select" => selected_client,
          "create_project" => input,
@@ -52,6 +61,9 @@ defmodule ReleaseNotesBot.Projects do
     client_id =
       String.to_integer(selected_client["static_select-action"]["selected_option"]["value"])
 
+    # !!!!!!!!
+    # We may have to encode the slack channel id here unless we maintain client/channel relation
+    # then propogate the project/channel relation
     client = Clients.get_channels(client_id)
     project_name = input["input_action"]["value"]
 
@@ -81,12 +93,14 @@ defmodule ReleaseNotesBot.Projects do
     }
   end
 
+  # Handles modal submission for creating a new client
   defp parse_inner_response(%{"create_client" => input}) do
     client_name = input["input_action"]["value"]
     Clients.create(%{"name" => input["input_action"]["value"]})
     %{client: client_name}
   end
 
+  # Handles modal submission where user assigns a client to a channel
   defp parse_inner_response(%{"client-select" => input}) do
     # Slack Channel ID is encoded in the only key. We need to decode it.
     # It looks like this: "static_select-action:SOME-ID".
@@ -95,16 +109,38 @@ defmodule ReleaseNotesBot.Projects do
     [key] = Map.keys(input)
     slack_channel = String.split(key, ":") |> List.last()
     client_id = String.to_integer(input[key]["selected_option"]["value"])
+    client = Clients.get_projects(id: client_id)
 
+    # Create an entry inside of the ProjectChannel table
+    # We need the channel id and the project id
+    # For all projects under a client, create an entry for those projects
+    # !!!!!
+
+    # Maintain the client and channels relation for edge cases:
+    # 1. where a new projcet is created after client assignment
+    # TO DO: make this a many to many relationship with a join table
     Channels.update(
       Channels.get(slack_id: slack_channel),
       %{client_id: client_id}
     )
 
-    client = Clients.get(id: client_id)
+    %Channel{:id => id} = Channels.get(slack_id: slack_channel)
+
+    IO.inspect("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    Enum.each(client.projects, fn project ->
+      Task.async(fn ->
+        ProjectChannels.create(%{
+          :project_id => project.id,
+          :channel_id => id
+        })
+      end |> IO.inspect)
+    end)
+    IO.inspect("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
     %{client: client.name, channel: slack_channel}
   end
 
+  # Handles modal submission for manual release note creation
   defp parse_inner_response(raw_values) do
     project_id = raw_values["block-title"]["select-title-action"]["selected_option"]["value"]
 
